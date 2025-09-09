@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FaUser, FaEye, FaEyeSlash } from "react-icons/fa";
 import { motion } from "framer-motion";
+import { toast, ToastContainer } from "react-toastify";
+
 
 export default function UserLogin() {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -21,8 +23,10 @@ export default function UserLogin() {
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // On successful login, redirect to user dashboard
-      router.push("/user");
+      router.push("/user/dashboard");
+      toast.success("Login successful!");
     } catch (error) {
+      toast.error("Login failed. Please try again.");
       console.error("Login failed:", error);
     } finally {
       setIsLoading(false);
@@ -107,7 +111,7 @@ export default function UserLogin() {
                 hover:bg-gradient-to-r hover:from-green-500 hover:to-blue-500 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 
                 disabled:opacity-50 transition"
             >
-              {isLoading ? "Signing in..." : "Sign In"}
+              {isLoading ? "Logging in..." : "Login"}
             </button>
           </form>
 

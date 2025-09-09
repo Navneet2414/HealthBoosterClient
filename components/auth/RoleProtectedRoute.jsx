@@ -5,10 +5,10 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 const ROLE_REDIRECTS = {
-  admin: '/admin',
-  doctor: '/doctor',
-  laboratory: '/laboratory',
-  user: '/user'
+  admin: '/admin/dashboard',
+  doctor: '/doctor/dashboard',
+  laboratory: '/laboratory/dashboard',
+  user: '/user/dashboard'
 };
 
 export function AdminRoute({ children }) {
@@ -21,7 +21,7 @@ export function AdminRoute({ children }) {
 
 export function DoctorRoute({ children }) {
   return (
-    <ProtectedRoute allowedRoles={['doctor']} redirectTo="/doctor/login">
+    <ProtectedRoute allowedRoles={['doctor']} redirectTo="/login/doctor">
       {children}
     </ProtectedRoute>
   );
@@ -29,7 +29,7 @@ export function DoctorRoute({ children }) {
 
 export function LaboratoryRoute({ children }) {
   return (
-    <ProtectedRoute allowedRoles={['laboratory']} redirectTo="/laboratory/login">
+    <ProtectedRoute allowedRoles={['laboratory']} redirectTo="/login/laboratory">
       {children}
     </ProtectedRoute>
   );
@@ -37,7 +37,7 @@ export function LaboratoryRoute({ children }) {
 
 export function UserRoute({ children }) {
   return (
-    <ProtectedRoute allowedRoles={['user']} redirectTo="/user/login">
+    <ProtectedRoute allowedRoles={['user']} redirectTo="/login/user">
       {children}
     </ProtectedRoute>
   );

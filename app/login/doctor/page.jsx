@@ -106,7 +106,7 @@ export default function DoctorLogin() {
             <p className="text-gray-600">
               Need to register your practice?{" "}
               <Link
-                href="/doctor/sign-up"
+                href="/sign-up/doctor"
                 className="font-medium bg-gradient-to-r from-blue-500 to-green-500 bg-clip-text text-transparent hover:opacity-80"
               >
                 Sign up

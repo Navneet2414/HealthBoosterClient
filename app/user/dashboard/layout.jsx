@@ -1,4 +1,4 @@
-import { DoctorRoute } from '@/components/auth/RoleProtectedRoute';
+import { UserRoute } from '@/components/auth/RoleProtectedRoute';
 
 export default function UserDashboardLayout({ children }) {
   return (
