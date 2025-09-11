@@ -17,7 +17,7 @@ const DoctorProfile = ({doctors}) => {
   const { speciality, doctorname } = params;
 
   return (
-    <div className="bg-gradient-to-r from-blue-400 to-green-400 min-h-screen p-6  mt-20">
+    <div className="bg-gradient-to-r from-blue-400 to-green-400  p-6 ">
 
 
       {/* <h1 className="text-2xl font-bold text-gray-800">Inside Doctor speciality doctor Name Page </h1> */}

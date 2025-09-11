@@ -62,7 +62,7 @@ export default function BookAppointment() {
   };
 
   return (
-    <div className="mt-20 bg-gray-50 flex flex-col">
+    <div className=" bg-gray-50 flex flex-col">
       {/* Header */}
       <div className="bg-gradient-to-r from-teal-400 to-blue-500 text-white text-center py-6 shadow">
         <p className="text-2xl font-semibold">Book Appointment</p>
