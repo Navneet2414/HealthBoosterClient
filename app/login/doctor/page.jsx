@@ -3,14 +3,17 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
 import { FaUserMd, FaEye, FaEyeSlash } from "react-icons/fa";
 import { motion } from "framer-motion";
+import { setCredentials } from "@/lib/store/slices/authSlice";
 
 export default function DoctorLogin() {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const dispatch = useDispatch();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,7 +22,19 @@ export default function DoctorLogin() {
     try {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      router.push("/doctor");
+      
+      // Mock doctor data - replace with actual API response
+      const doctorData = {
+        user: { id: 1, email: formData.email, name: "Dr. Smith" },
+        token: "mock-jwt-token",
+        role: "doctor"
+      };
+
+      // Set authentication state
+      dispatch(setCredentials(doctorData));
+      
+      // Redirect to doctor dashboard
+      router.push("/doctor/dashboard");
     } catch (error) {
       console.error("Login failed:", error);
     } finally {
@@ -106,7 +121,7 @@ export default function DoctorLogin() {
             <p className="text-gray-600">
               Need to register your practice?{" "}
               <Link
-                href="/doctor/sign-up"
+                href="/sign-up/doctor"
                 className="font-medium bg-gradient-to-r from-blue-500 to-green-500 bg-clip-text text-transparent hover:opacity-80"
               >
                 Sign up

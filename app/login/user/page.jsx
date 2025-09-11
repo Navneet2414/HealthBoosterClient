@@ -3,14 +3,19 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
 import { FaUser, FaEye, FaEyeSlash } from "react-icons/fa";
 import { motion } from "framer-motion";
+import { toast, ToastContainer } from "react-toastify";
+import { setCredentials } from "@/lib/store/slices/authSlice";
+
 
 export default function UserLogin() {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const dispatch = useDispatch();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,9 +25,22 @@ export default function UserLogin() {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      // On successful login, redirect to user dashboard
-      router.push("/user");
+      // Mock user data - replace with actual API response
+      const userData = {
+        user: { id: 1, email: formData.email, name: "User" },
+        token: "mock-jwt-token",
+        role: "user"
+      };
+
+      // Set authentication state
+      dispatch(setCredentials(userData));
+      
+      toast.success("Login successful!");
+      
+      // Redirect to user dashboard
+      router.push("/user/dashboard");
     } catch (error) {
+      toast.error("Login failed. Please try again.");
       console.error("Login failed:", error);
     } finally {
       setIsLoading(false);
@@ -107,7 +125,7 @@ export default function UserLogin() {
                 hover:bg-gradient-to-r hover:from-green-500 hover:to-blue-500 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 
                 disabled:opacity-50 transition"
             >
-              {isLoading ? "Signing in..." : "Sign In"}
+              {isLoading ? "Logging in..." : "Login"}
             </button>
           </form>
 
@@ -137,6 +155,7 @@ export default function UserLogin() {
           </div>
         </div>
       </motion.div>
+      <ToastContainer position="top-right" autoClose={3000} />
     </main>
   );
 }

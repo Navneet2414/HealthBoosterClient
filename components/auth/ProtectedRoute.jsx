@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-export default function ProtectedRoute({ children, allowedRoles = [], redirectTo = '/login' }) {
+export default function ProtectedRoute({ children, allowedRoles = [], redirectTo }) {
   const { isAuthenticated, role, token } = useSelector((state) => state.auth);
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
@@ -21,7 +21,9 @@ export default function ProtectedRoute({ children, allowedRoles = [], redirectTo
   useEffect(() => {
     if (!isLoading) {
       if (!isAuthenticated || !token) {
-        router.push(redirectTo);
+        // Use provided redirectTo or default to main login
+        const defaultRedirect = redirectTo || '/login';
+        router.push(defaultRedirect);
         return;
       }
 

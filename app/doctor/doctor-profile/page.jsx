@@ -66,7 +66,7 @@ export default function DoctorProfile() {
     // Add more doctors here
   ];
   return (
-    <div className="space-y-4 mt-20 p-6 ">
+    <div className="space-y-4 p-6 ">
 
       <h1 className="text-2xl font-bold text-gray-800"> Doctor's For Your Health Consultation </h1>
       {doctors.map((doc) => (

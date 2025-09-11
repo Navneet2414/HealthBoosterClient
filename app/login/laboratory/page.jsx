@@ -3,14 +3,17 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FaUserMd, FaEye, FaEyeSlash } from "react-icons/fa";
+import { useDispatch } from "react-redux";
+import { FaFlask, FaEye, FaEyeSlash } from "react-icons/fa";
 import { motion } from "framer-motion";
+import { setCredentials } from "@/lib/store/slices/authSlice";
 
-export default function DoctorLogin() {
+export default function LaboratoryLogin() {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const dispatch = useDispatch();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,8 +23,18 @@ export default function DoctorLogin() {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      // On successful login, redirect to doctor dashboard
-      router.push("/laboratory");
+      // Mock laboratory data - replace with actual API response
+      const labData = {
+        user: { id: 1, email: formData.email, name: "Lab Manager" },
+        token: "mock-jwt-token",
+        role: "laboratory"
+      };
+
+      // Set authentication state
+      dispatch(setCredentials(labData));
+      
+      // Redirect to laboratory dashboard
+      router.push("/laboratory/dashboard");
     } catch (error) {
       console.error("Login failed:", error);
     } finally {
@@ -44,19 +57,19 @@ export default function DoctorLogin() {
           <div className="text-center mb-8">
             {/* Gradient circle icon */}
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-green-500 rounded-full mb-4">
-              <FaUserMd className="w-8 h-8 text-white" />
+              <FaFlask className="w-8 h-8 text-white" />
             </div>
             {/* Gradient heading */}
             <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-500 to-green-500 bg-clip-text text-transparent">
-              Doctor Login
+              Laboratory Login
             </h1>
-            <p className="text-gray-600 mt-2">Access your medical practice</p>
+            <p className="text-gray-600 mt-2">Access your laboratory dashboard</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Medical License Email
+                Laboratory Email
               </label>
               <input
                 type="email"
@@ -65,7 +78,7 @@ export default function DoctorLogin() {
                 onChange={handleChange}
                 required
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="Enter your registered email"
+                placeholder="Enter your laboratory email"
               />
             </div>
 
@@ -107,7 +120,7 @@ export default function DoctorLogin() {
             <p className="text-gray-600">
               Need to register your practice?{" "}
               <Link
-                href="/laboratory/sign-up"
+                href="/sign-up/laboratory"
                 className="font-medium bg-gradient-to-r from-blue-500 to-green-500 bg-clip-text text-transparent hover:opacity-80"
               >
                 Sign up
