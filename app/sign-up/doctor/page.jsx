@@ -31,7 +31,7 @@ export default function DoctorSignup() {
     try {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1500));
-      router.push("/login/doctor");
+      router.push("/verify-otp?role=doctor");
     } catch (error) {
       console.error("Signup failed:", error);
     } finally {

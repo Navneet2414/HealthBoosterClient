@@ -1,0 +1,23 @@
+User-agent: *
+Allow: /
+
+# Important pages
+Allow: /doctor
+Allow: /laboratory
+Allow: /order-medicine
+Allow: /about-us
+Allow: /sign-up
+Allow: /login
+
+# Block admin and private areas
+Disallow: /admin
+Disallow: /user/dashboard
+Disallow: /doctor/dashboard
+Disallow: /laboratory/dashboard
+Disallow: /verify-otp
+
+# Allow search engines to access images
+Allow: /images/
+
+# Sitemap location
+Sitemap: https://healthbooster.com/sitemap.xml

@@ -1,10 +1,10 @@
 "use client";
 import { useState } from "react";
 // import StatCard from "@/components/user/dashboard/stat-card";
-import Appointment from "./_component/appointment";
-import LabReport from "./_component/labreport";
-import Medicine from "./_component/medicines";
-import Profile from "./_component/profile";
+import Appointment from "./components/appointment";
+import LabReport from "./components/labreport";
+import Medicine from "./components/medicines";
+import Profile from "./components/profile";
 
 export default function UserDashboard() {
   const [activeTab, setActiveTab] = useState("Appointments");
