@@ -1,15 +1,24 @@
-// components/AboutSection.jsx
-"use client";
 import { FaUserFriends, FaUserMd, FaShieldAlt, FaHeart } from "react-icons/fa";
 import { FaUserShield, FaHeartbeat, FaClock, FaMedal, FaUserCircle } from "react-icons/fa";
 import { FaPhoneAlt, FaEnvelope, FaMapMarkerAlt } from "react-icons/fa";
+
+export const metadata = {
+  title: "About Us - HealthBooster | Leading Healthcare Platform in India",
+  description: "Learn about HealthBooster's mission to make quality healthcare accessible to everyone. Meet our team of healthcare experts and technology innovators transforming healthcare delivery in India.",
+  keywords: "about healthbooster, healthcare mission, medical team, healthcare innovation, patient care, health technology, healthcare platform India",
+  openGraph: {
+    title: "About HealthBooster - Healthcare Innovation Team",
+    description: "Discover how HealthBooster is revolutionizing healthcare access with 500+ expert doctors, 50,000+ happy patients, and 98% success rate.",
+    images: ["/images/logoedited.png"],
+  },
+};
 
 export default function AboutSection() {
   return (
     <section>
       {/* Header Section */}
       <div className="bg-gradient-to-r from-blue-500 to-green-500 text-white py-16 text-center ">
-        <h2 className="text-4xl font-bold">About HealthBooker</h2>
+        <h2 className="text-4xl font-bold">About HealthBooster</h2>
         <p className="mt-4 max-w-2xl mx-auto text-lg">
           Revolutionizing healthcare access with technology, compassion, and a
           commitment to better health outcomes for everyone.
@@ -46,7 +55,7 @@ export default function AboutSection() {
         <div>
           <h3 className="text-2xl font-bold mb-4">Our Mission</h3>
           <p className="text-gray-700 mb-4">
-            At HealthBooker, we believe that quality healthcare should be
+            At HealthBooster, we believe that quality healthcare should be
             accessible, affordable, and convenient for everyone. Our mission is
             to bridge the gap between patients and healthcare providers through
             innovative technology.
@@ -242,7 +251,7 @@ export default function AboutSection() {
         <div className="mx-auto text-center py-16 bg-gray-900 text-white mb-5">
           <h2 className="text-3xl font-bold">Our Story</h2>
           <p className="mt-4 text-gray-300 text-center mx-auto max-w-md">
-            Founded in 2020 during the global pandemic, HealthBooker was born from the urgent
+            Founded in 2020 during the global pandemic, HealthBooster was born from the urgent
             need to make healthcare accessible when traditional systems were overwhelmed.
             What started as a simple appointment booking platform has evolved into a
             comprehensive healthcare ecosystem.
@@ -271,7 +280,7 @@ export default function AboutSection() {
             <div>
               <FaEnvelope className="mx-auto text-green-500 text-2xl" />
               <h3 className="mt-2 font-medium">Email Us</h3>
-              <p className="text-gray-600 text-sm mt-1">support@healthbooker.com</p>
+              <p className="text-gray-600 text-sm mt-1">support@healthbooster.com</p>
             </div>
             <div>
               <FaMapMarkerAlt className="mx-auto text-purple-500 text-2xl" />

@@ -1,36 +1,207 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# HealthBooster Frontend
 
-## Getting Started
+A comprehensive healthcare platform built with Next.js 15, providing seamless access to medical services including doctor consultations, lab tests, and medicine delivery.
 
-First, run the development server:
+## 🚀 Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Multi-Role Authentication**: Support for Users, Doctors, and Laboratories
+- **Doctor Consultation**: Find and book appointments with qualified doctors
+- **Lab Testing**: Book diagnostic tests and view reports
+- **Medicine Delivery**: Order medicines with home delivery
+- **User Dashboard**: Comprehensive health tracking and management
+- **Responsive Design**: Mobile-first approach with Tailwind CSS
+- **Modern UI**: Beautiful animations with Framer Motion
+
+## 🛠️ Tech Stack
+
+- **Framework**: Next.js 15 with App Router
+- **Styling**: Tailwind CSS 4
+- **Animations**: Framer Motion
+- **State Management**: Redux Toolkit
+- **Icons**: React Icons
+- **Notifications**: React Toastify
+- **Language**: JavaScript (ES6+)
+
+## 📁 Project Structure
+
+```
+healthboosterfrontend/
+├── app/                          # Next.js App Router
+│   ├── about-us/                 # About page
+│   ├── admin/                    # Admin dashboard
+│   ├── dashboard/                # Main dashboard
+│   ├── doctor/                   # Doctor-related pages
+│   ├── laboratory/               # Lab-related pages
+│   ├── login/                    # Authentication pages
+│   │   ├── doctor/               # Doctor login
+│   │   ├── laboratory/           # Lab login
+│   │   └── user/                 # User login
+│   ├── sign-up/                  # Registration pages
+│   │   ├── doctor/               # Doctor registration
+│   │   ├── laboratory/           # Lab registration
+│   │   └── user/                 # User registration
+│   ├── user/                     # User-specific pages
+│   │   └── dashboard/            # User dashboard
+│   │       └── components/       # Dashboard components
+│   ├── verify-otp/               # OTP verification
+│   ├── globals.css               # Global styles
+│   ├── layout.js                 # Root layout
+│   └── page.js                   # Home page
+├── components/                   # Reusable components
+│   ├── auth/                     # Authentication components
+│   ├── providers/                # Context providers
+│   └── shared/                   # Shared UI components
+├── lib/                          # Utilities and configurations
+│   ├── hooks/                    # Custom React hooks
+│   └── store/                    # Redux store configuration
+├── public/                       # Static assets
+│   └── images/                   # Image assets
+├── tailwind.config.js            # Tailwind configuration
+├── next.config.mjs               # Next.js configuration
+└── package.json                  # Dependencies
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🚀 Getting Started
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+### Prerequisites
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Node.js 18+ 
+- npm or yarn
 
-## Learn More
+### Installation
 
-To learn more about Next.js, take a look at the following resources:
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd healthboosterfrontend
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. **Install dependencies**
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env.local
+   ```
+   Configure your environment variables in `.env.local`
 
-## Deploy on Vercel
+4. **Run the development server**
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+5. **Open your browser**
+   Navigate to [http://localhost:3000](http://localhost:3000)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🔧 Available Scripts
+
+- `npm run dev` - Start development server with Turbopack
+- `npm run build` - Build for production with Turbopack
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
+
+## 🎨 Styling
+
+This project uses Tailwind CSS 4 with custom configuration:
+
+- **Custom Colors**: Primary (blue) and Secondary (green) color schemes
+- **Custom Animations**: Fade-in, slide-up, and text gradient animations
+- **Responsive Design**: Mobile-first approach
+- **Custom Components**: Reusable UI components
+
+## 🔐 Authentication Flow
+
+1. **Role Selection**: Users choose between User, Doctor, or Laboratory
+2. **Registration**: Role-specific registration forms
+3. **OTP Verification**: Email-based verification
+4. **Dashboard Access**: Role-based dashboard redirection
+
+## 🚦 Routing Structure
+
+- `/` - Landing page
+- `/sign-up` - Role selection for registration
+- `/sign-up/{role}` - Role-specific registration
+- `/login/{role}` - Role-specific login
+- `/verify-otp` - OTP verification with role parameter
+- `/{role}/dashboard` - Role-specific dashboards
+- `/doctor` - Find doctors
+- `/laboratory` - Book lab tests
+- `/order-medicine` - Medicine ordering
+
+## 🔄 State Management
+
+Using Redux Toolkit for:
+- Authentication state
+- User data management
+- API calls and caching
+- Global application state
+
+## 📱 Responsive Design
+
+- **Mobile First**: Optimized for mobile devices
+- **Tablet Support**: Enhanced experience on tablets
+- **Desktop**: Full-featured desktop experience
+- **Touch Friendly**: Optimized for touch interactions
+
+## 🎯 Key Features Implementation
+
+### Multi-Role System
+- Separate registration and login flows
+- Role-based routing and permissions
+- Customized dashboards per role
+
+### Modern UI/UX
+- Gradient backgrounds and buttons
+- Smooth animations with Framer Motion
+- Toast notifications for user feedback
+- Loading states and error handling
+
+### Professional Structure
+- Clean folder organization
+- Consistent naming conventions
+- Modular component architecture
+- Proper separation of concerns
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+1. **Import Errors**: Ensure all paths use the new component structure
+2. **Styling Issues**: Check Tailwind configuration and imports
+3. **Routing Problems**: Verify Next.js App Router structure
+4. **Build Errors**: Clear `.next` folder and reinstall dependencies
+
+### Development Tips
+
+- Use the browser dev tools for debugging
+- Check console for error messages
+- Verify environment variables are set correctly
+- Ensure all dependencies are installed
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 🆘 Support
+
+For support and questions:
+- Email: support@healthbooster.com
+- Phone: +91 6394832414
+
+---
+
+**HealthBooster** - Your trusted healthcare partner 🏥

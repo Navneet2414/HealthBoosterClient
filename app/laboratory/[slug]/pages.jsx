@@ -12,7 +12,7 @@ export default function PopularHealthPackage() {
     title: slug.replace(/-/g, " ").toUpperCase(),
     description: "This is a description for the selected health package."
   };
-  console.log("packageData",packageData);
+  // packageData loaded
   if (!packageData) return <p>No package data found</p>;
   return (
     <div className="min-h-screen bg-gray-50">

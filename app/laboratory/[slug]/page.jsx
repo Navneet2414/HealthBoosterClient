@@ -70,7 +70,7 @@ export default function PackageDetails() {
 const currentSlug = params.slug ; // handle both cases
 const pkg = packages.find((p) => p.slug === currentSlug);
 
-console.log("Selected package:", params.slug);
+// Selected package: params.slug
   if (!pkg) {
     return <div className="mt-20 text-center text-red-500">Package not found.</div>;
   }
