@@ -7,9 +7,9 @@ import { motion } from "framer-motion";
 
 // Optional: tweak routes here
 const routes = {
-  doctor: { login: "/login/doctor", signup: "/doctor/sign-up" },
-  lab: { login: "/login/laboratory", signup: "/laboratory/sign-up" },
-  user: { login: "/login/user", signup: "/user/sign-up" },
+  doctor: { login: "/login/doctor", signup: "/sign-up/doctor" },
+  lab: { login: "/login/laboratory", signup: "/sign-up/laboratory" },
+  user: { login: "/login/user", signup: "/sign-up/user" },
 };
 
 const cards = [
@@ -34,14 +34,6 @@ const cards = [
 ];
 
 export default function AuthPortal() {
-  useEffect(() => {
-    console.log("AuthPortal component mounted");
-    console.log("Current URL:", window.location.href);
-    console.log("Routes:", routes);
-    console.log("Cards:", cards);
-  }, []);
-
-  console.log("AuthPortal rendering...");
   return (
     <main className="min-h-[85vh] w-full bg-gray-50 px-4 py-10 md:py-16 ">
       <div className="mx-auto max-w-6xl">
@@ -78,9 +70,7 @@ export default function AuthPortal() {
                   aria-label={`${title} – Login`}
                   className="inline-flex items-center justify-center rounded-xl px-6 py-3 font-medium bg-white/20 hover:bg-white/30 backdrop-blur transition focus:outline-none focus:ring-2 focus:ring-white/60 mb-4"
                   onClick={(e) => {
-                    console.log('Login clicked for:', title);
-                    console.log('Navigating to:', loginHref);
-                    console.log('Event:', e);
+                    // Handle login navigation
                   }}
                 >
                   Login
@@ -94,9 +84,7 @@ export default function AuthPortal() {
                     className="underline underline-offset-4 hover:no-underline font-medium"
                     aria-label={`${title} – Sign up`}
                     onClick={(e) => {
-                      console.log('Signup clicked for:', title);
-                      console.log('Navigating to:', signupHref);
-                      console.log('Event:', e);
+                      // Handle signup navigation
                     }}
                   >
                     Sign up

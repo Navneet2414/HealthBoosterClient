@@ -1,14 +1,8 @@
-// components/AboutTab.jsx
 "use client";
 
-import { useParams,useSearchParams } from "next/navigation";
-export default function AboutTab({ params }) {
-  const { speciality, doctorname } = useParams();
-  const searchParams = useSearchParams();
-  const city = searchParams.get("city");
-  // console.log("about page params",params);
+export default function AboutTab({ doctor, doctorname }) {
   return (
-    <div className="p-6 border rounded-lg bg-white shadow-md m-2 ">
+    <div className="p-6 border rounded-lg bg-white shadow-md m-2">
       <h3 className="text-lg font-semibold mb-2">{doctorname}</h3>
       <p className="text-gray-600 mb-4">
         {doctorname} is a highly experienced cardiologist with over 15 years of practice.
@@ -18,7 +12,6 @@ export default function AboutTab({ params }) {
       </p>
 
       <div className="grid md:grid-cols-2 gap-6">
-        {/* Education */}
         <div>
           <h4 className="font-semibold mb-2">Education & Qualifications</h4>
           <ul className="list-disc pl-5 text-gray-600 space-y-1">
@@ -28,7 +21,6 @@ export default function AboutTab({ params }) {
           </ul>
         </div>
 
-        {/* Awards */}
         <div>
           <h4 className="font-semibold mb-2">Awards & Recognition</h4>
           <ul className="list-disc pl-5 text-gray-600 space-y-1">
