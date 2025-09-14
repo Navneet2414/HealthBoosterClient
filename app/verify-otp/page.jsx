@@ -20,12 +20,12 @@ export default function VerifyOtpForm() {
       
       // Role-based redirect after OTP verification
       const redirectMap = {
-        user: '/user/dashboard',
-        doctor: '/doctor/dashboard',
-        laboratory: '/laboratory/dashboard'
+        user: '/login/user',
+        doctor: '/login/doctor',
+        laboratory: '/login/laboratory'
       };
       
-      router.push(redirectMap[role] || '/user/dashboard');
+      router.push(redirectMap[role] || '/login/user');
     } catch (error) {
       alert("Invalid OTP. Please try again.");
     } finally {
