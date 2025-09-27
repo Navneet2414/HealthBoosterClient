@@ -7,38 +7,43 @@ import { useDispatch } from "react-redux";
 import { FaFlask, FaEye, FaEyeSlash } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { setCredentials } from "@/lib/store/slices/authSlice";
+import { useLoginLaboratoryMutation } from "@/lib/store/api/laboratoryApi";
+import { toast } from "react-toastify";
 
 export default function LaboratoryLogin() {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const dispatch = useDispatch();
+  const [loginLaboratory, { isLoading }] = useLoginLaboratoryMutation();
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Mock laboratory data - replace with actual API response
-      const labData = {
-        user: { id: 1, email: formData.email, name: "Lab Manager" },
-        token: "mock-jwt-token",
-        role: "laboratory"
-      };
-
-      // Set authentication state
-      dispatch(setCredentials(labData));
+      const result = await loginLaboratory(formData).unwrap();
       
-      // Redirect to laboratory dashboard
-      router.push("/laboratory/dashboard");
+      // Set authentication state
+      dispatch(setCredentials({
+        user: result.user,
+        token: result.token,
+        role: result.lab.role
+      }));
+      
+      toast.success("Login successful!");
+      
+      // Redirect immediately
+      if (result.lab.isApproved) {
+        router.push("/laboratory/dashboard");
+      } else {
+        router.push("/verification-pending");
+      }
     } catch (error) {
-      console.error("Login failed:", error);
-    } finally {
-      setIsLoading(false);
+      toast.error(error?.data?.message || "Login failed. Please try again.");
     }
   };
 

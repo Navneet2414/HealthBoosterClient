@@ -43,8 +43,8 @@ export default function DoctorSignup() {
     try {
       const formDataToSend = await handleSubmitForm(formData);
       const result = await registerDoctor(formDataToSend).unwrap();
-      toast.success("Registration successful! Please verify your OTP.");
-      router.push("/verify-otp?role=doctor");
+      toast.success(result.message || "Registration successful! Please verify your OTP.");
+      router.push(`/verify-otp?role=doctor&email=${formData.email}`);
     } catch (error) {
       toast.error(error?.data?.message || "Registration failed. Please try again.");
     } finally {

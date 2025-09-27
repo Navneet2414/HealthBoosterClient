@@ -3,6 +3,7 @@ import "./globals.css";
 import Navigation  from "../components/shared/navigation";
 import Footer from "@/components/shared/footer";
 import ReduxProvider from "@/components/providers/ReduxProvider";
+import AuthProvider from "@/components/providers/AuthProvider";
 import AuthInitializer from "@/components/auth/AuthInitializer";
 import { Toaster } from "react-hot-toast";
 
@@ -86,32 +87,34 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <ReduxProvider>
-          <AuthInitializer>
-            <Navigation />
-            <main className="pt-16">
-              {children}
-            </main>
-            <Footer />
-            <Toaster
-              position="top-right"
-              toastOptions={{
-                duration: 4000,
-                style: {
-                  background: '#363636',
-                  color: '#fff',
-                },
-                success: {
-                  duration: 3000,
-                  theme: {
-                    primary: 'green',
-                    secondary: 'black',
+        <AuthProvider>
+          <ReduxProvider>
+            <AuthInitializer>
+              <Navigation />
+              <main className="pt-16">
+                {children}
+              </main>
+              <Footer />
+              <Toaster
+                position="top-right"
+                toastOptions={{
+                  duration: 4000,
+                  style: {
+                    background: '#363636',
+                    color: '#fff',
                   },
-                },
-              }}
-            />
-          </AuthInitializer>
-        </ReduxProvider>
+                  success: {
+                    duration: 3000,
+                    theme: {
+                      primary: 'green',
+                      secondary: 'black',
+                    },
+                  },
+                }}
+              />
+            </AuthInitializer>
+          </ReduxProvider>
+        </AuthProvider>
       </body>
     </html>
   );

@@ -48,7 +48,7 @@ export default function UserSignup() {
       ); // ✅ success toast
 
       setTimeout(() => {
-        router.push("/verify-otp?role=user");
+        router.push(`/verify-otp?role=user&email=${email}`);
       }, 2000); // give time for toast to show
     } catch (err) {
       console.error("❌ Registration failed:", err);
