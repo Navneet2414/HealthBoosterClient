@@ -2,6 +2,8 @@
 import React from "react";
 import Link from "next/link";
 import slugify from "slugify";
+import { motion } from "framer-motion";
+import { useGetFeaturedDoctorsQuery, useGetLatestDoctorsQuery } from "@/lib/store/api/doctorApi";
 
 const doctors = [
   {
@@ -85,6 +87,9 @@ const doctors = [
 ];
 
 export default function FeaturedDoctors() {
+  const { data: latestDoctors, isLoading } = useGetLatestDoctorsQuery();
+  console.log("Latest Doctors:", latestDoctors?.data);
+
   return (
     <section className="py-12 bg-white text-center">
       <h2 className="text-3xl font-bold text-gray-800 mb-2">
@@ -96,7 +101,8 @@ export default function FeaturedDoctors() {
 
       {/* Doctors Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-6 lg:px-20">
-        {doctors.map((doc) => {
+        {latestDoctors?.data?.map((item) => {
+          const doc = item.doctor;
           const slug = slugify(doc.name, {
             lower: true,
             strict: true,
@@ -105,13 +111,13 @@ export default function FeaturedDoctors() {
 
           return (
             <Link
-              key={doc.id}
+              key={doc._id}
               href={`/doctor/doctor-profile/${doc.specialization.toLowerCase()}/${slug}`}
               className="bg-white shadow-md rounded-xl p-5 flex items-start gap-4 hover:shadow-xl transition"
             >
               {/* Doctor Image */}
               <img
-                src={doc.image}
+                src={doc.profileImage ? `/images/${doc.profileImage}` : "https://randomuser.me/api/portraits/men/32.jpg"}
                 alt={doc.name}
                 className="w-16 h-16 rounded-full object-cover border-2 border-green-200"
               />
@@ -125,33 +131,31 @@ export default function FeaturedDoctors() {
 
                 {/* Rating */}
                 <p className="text-gray-700 text-sm mt-1">
-                  ⭐ {doc.rating}{" "}
+                  ⭐ 4.8{" "}
                   <span className="text-gray-500">
-                    ({doc.reviews} reviews)
+                    (150+ reviews)
                   </span>
                 </p>
 
                 {/* Location & Experience */}
                 <p className="text-gray-500 text-sm mt-1">
-                  📍 {doc.location} • {doc.experience}
+                  📍 {doc.address?.country || "India"} • {doc.experience}+ years
                 </p>
 
                 {/* Fee */}
                 <p className="text-gray-700 text-sm font-semibold mt-2">
                   Consultation Fee:{" "}
-                  <span className="text-green-600">₹{doc.fee}</span>
+                  <span className="text-green-600">₹{doc.consultationFee}</span>
                 </p>
 
                 {/* Languages */}
                 <div className="flex gap-2 mt-2">
-                  {doc.languages.map((lang, idx) => (
-                    <span
-                      key={idx}
-                      className="text-xs px-2 py-1 rounded-md border text-gray-700"
-                    >
-                      {lang}
-                    </span>
-                  ))}
+                  <span className="text-xs px-2 py-1 rounded-md border text-gray-700">
+                    English
+                  </span>
+                  <span className="text-xs px-2 py-1 rounded-md border text-gray-700">
+                    Hindi
+                  </span>
                 </div>
 
                 {/* Buttons */}
@@ -167,7 +171,7 @@ export default function FeaturedDoctors() {
 
               {/* Availability Badge */}
               <span className="ml-auto px-3 py-1 text-xs rounded-full bg-green-100 text-green-600 font-medium">
-                {doc.availability}
+                {doc.status === 'active' ? 'Available' : 'Busy'}
               </span>
             </Link>
           );

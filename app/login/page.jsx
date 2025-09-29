@@ -2,17 +2,23 @@
 
 import React, { useEffect } from "react";
 import Link from "next/link";
-import { FaUserMd, FaFlask, FaUser } from "react-icons/fa";
+import { FaUserMd, FaFlask, FaUser, FaUserShield } from "react-icons/fa";
 import { motion } from "framer-motion";
 
 // Optional: tweak routes here
 const routes = {
+  admin: { login: "/login/admin" },
   doctor: { login: "/login/doctor", signup: "/sign-up/doctor" },
   lab: { login: "/login/laboratory", signup: "/sign-up/laboratory" },
   user: { login: "/login/user", signup: "/sign-up/user" },
 };
 
 const cards = [
+  {
+    title: "Admin Login",
+    Icon: FaUserShield,
+    loginHref: routes.admin.login,
+  },
   {
     title: "Doctor Login",
     Icon: FaUserMd,
@@ -44,7 +50,7 @@ export default function AuthPortal() {
           <p className="mt-2 text-gray-600">Choose your role to continue.</p>
         </header>
 
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
           {cards.map(({ title, Icon, loginHref, signupHref }, idx) => (
             <motion.div
               key={title}
@@ -77,19 +83,21 @@ export default function AuthPortal() {
                 </Link>
 
                 {/* Signup Link */}
-                <span className="text-white/80 text-sm text-center">
-                  Not registered? {" "}
-                  <Link
-                    href={signupHref}
-                    className="underline underline-offset-4 hover:no-underline font-medium"
-                    aria-label={`${title} – Sign up`}
-                    onClick={(e) => {
-                      // Handle signup navigation
-                    }}
-                  >
-                    Sign up
-                  </Link>
-                </span>
+                {signupHref && (
+                  <span className="text-white/80 text-sm text-center">
+                    Not registered? {" "}
+                    <Link
+                      href={signupHref}
+                      className="underline underline-offset-4 hover:no-underline font-medium"
+                      aria-label={`${title} – Sign up`}
+                      onClick={(e) => {
+                        // Handle signup navigation
+                      }}
+                    >
+                      Sign up
+                    </Link>
+                  </span>
+                )}
               </div>
 
               {/* Subtle glow on hover */}

@@ -7,38 +7,44 @@ import { useDispatch } from "react-redux";
 import { FaUserMd, FaEye, FaEyeSlash } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { setCredentials } from "@/lib/store/slices/authSlice";
+import { useLoginDoctorMutation } from "@/lib/store/api/doctorApi";
+import { toast } from "react-toastify";
 
 export default function DoctorLogin() {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const dispatch = useDispatch();
+  const [loginDoctor, { isLoading }] = useLoginDoctorMutation();
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      
-      // Mock doctor data - replace with actual API response
-      const doctorData = {
-        user: { id: 1, email: formData.email, name: "Dr. Smith" },
-        token: "mock-jwt-token",
-        role: "doctor"
-      };
+      const result = await loginDoctor(formData).unwrap();
+      console.log("Login Result:", result);
 
-      // Set authentication state
-      dispatch(setCredentials(doctorData));
-      
-      // Redirect to doctor dashboard
-      router.push("/doctor/dashboard");
+      dispatch(setCredentials({
+        user: result.user,
+        token: result.token,
+        role: result.doctor.role
+      }));
+
+
+      toast.success("Login successful!");
+
+      // Redirect immediately
+      if (result.doctor.isApproved) {
+        router.push("/doctor/dashboard");
+      } else {
+        router.push("/verification-pending");
+      }
     } catch (error) {
-      console.error("Login failed:", error);
-    } finally {
-      setIsLoading(false);
+      toast.error(error?.data?.message || "Login failed. Please try again.");
     }
   };
 

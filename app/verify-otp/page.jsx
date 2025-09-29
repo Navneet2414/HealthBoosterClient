@@ -2,21 +2,29 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useVerifyOtpMutation, useResendOtpMutation } from "@/lib/store/api/otpApi";
+import { toast } from "react-toastify";
 
 export default function VerifyOtpForm() {
   const [otp, setOtp] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const role = searchParams.get('role') || 'user';
+  const email = searchParams.get('email');
+  const [verifyOtpMutation, { isLoading }] = useVerifyOtpMutation();
+  const [resendOtpMutation, { isLoading: isResending }] = useResendOtpMutation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
+    
+    if (!email) {
+      toast.error('Email not found. Please register again.');
+      return;
+    }
     
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      alert("OTP verified successfully!");
+      const result = await verifyOtpMutation({ email, otp, role }).unwrap();
+      toast.success(result.message || 'OTP verified successfully!');
       
       // Role-based redirect after OTP verification
       const redirectMap = {
@@ -27,9 +35,21 @@ export default function VerifyOtpForm() {
       
       router.push(redirectMap[role] || '/login/user');
     } catch (error) {
-      alert("Invalid OTP. Please try again.");
-    } finally {
-      setIsLoading(false);
+      toast.error(error?.data?.message || 'Invalid OTP. Please try again.');
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (!email) {
+      toast.error('Email not found. Please register again.');
+      return;
+    }
+
+    try {
+      const result = await resendOtpMutation({ email, role }).unwrap();
+      toast.success(result.message || 'OTP resent successfully!');
+    } catch (error) {
+      toast.error(error?.data?.message || 'Failed to resend OTP. Please try again.');
     }
   };
 
@@ -69,9 +89,11 @@ export default function VerifyOtpForm() {
           Didn't receive the code?{" "}
           <button
             type="button"
-            className="font-medium text-blue-600 hover:underline"
+            disabled={isResending}
+            onClick={handleResendOtp}
+            className="font-medium text-blue-600 hover:underline disabled:opacity-50"
           >
-            Resend OTP
+            {isResending ? 'Resending...' : 'Resend OTP'}
           </button>
         </p>
       </div>

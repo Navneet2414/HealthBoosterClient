@@ -217,7 +217,7 @@ export default function BookLabTests() {
   return (
     <div className=" bg-white">
       {/* HERO SECTION */}
-      <div className="bg-gradient-to-r from-[#2BC0E4] to-[#EAECC6] py-16 text-center">
+      <div className="bg-gradient-to-r from-blue-500 to-green-500 py-16 text-center">
         <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">
           Book Lab Tests
         </h1>
@@ -238,7 +238,7 @@ export default function BookLabTests() {
             <option>Mumbai</option>
             <option>Bangalore</option>
           </select>
-          <button className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg w-full sm:w-auto">
+          <button className="bg-gradient-to-r from-blue-500 to-green-500 hover:opacity-90 text-white px-6 py-3 rounded-lg w-full sm:w-auto">
             Search Tests
           </button>
         </div>
@@ -263,13 +263,13 @@ export default function BookLabTests() {
               <div className="flex justify-between items-center mb-2">
                 <h3 className="text-xl font-semibold">{pkg.title}</h3>
                 {pkg.popular && (
-                  <span className="bg-green-100 text-green-600 text-xs font-semibold px-3 py-1 rounded-full">
+                  <span className="bg-gradient-to-r from-blue-500 to-green-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
                     Popular
                   </span>
                 )}
               </div>
               <div className="flex items-center gap-3 mb-4">
-                <span className="text-green-600 text-2xl font-bold">
+                <span className="bg-gradient-to-r from-blue-500 to-green-500 bg-clip-text text-transparent text-2xl font-bold">
                   ₹{pkg.price}
                 </span>
                 <span className="line-through text-gray-500">
@@ -284,14 +284,14 @@ export default function BookLabTests() {
               <ul className="space-y-1 text-gray-700 mb-6">
                 {pkg.includes.map((item, i) => (
                   <li key={i} className="flex items-center gap-2">
-                    <span className="text-green-500">●</span> {item}
+                    <span className="bg-gradient-to-r from-blue-500 to-green-500 bg-clip-text text-transparent font-bold">●</span> {item}
                   </li>
                 ))}
               </ul>
 
               <button
                 onClick={() => handleRedirect(pkg.title)} // ✅ dynamic redirect
-                className="w-full py-3 rounded-lg bg-gradient-to-r from-[#2BC0E4] to-[#2BC0A4] text-white font-semibold hover:opacity-90"
+                className="w-full py-3 rounded-lg bg-gradient-to-r from-blue-500 to-green-500 text-white font-semibold hover:opacity-90"
               >
                 Book Package
               </button>
