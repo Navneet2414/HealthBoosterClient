@@ -35,16 +35,37 @@ export default function LaboratorySignup() {
 
     try {
       const formDataToSend = new FormData();
-      Object.keys(formData).forEach(key => {
-        if (key !== 'confirmPassword') {
-          formDataToSend.append(key, formData[key]);
-        }
-      });
+      
+      // Map frontend fields to backend expected fields
+      formDataToSend.append('name', formData.name);
+      formDataToSend.append('email', formData.email);
+      formDataToSend.append('phone', formData.phone);
+      formDataToSend.append('password', formData.password);
+      
+      // Create address object for backend
+      const addressObj = {
+        street: formData.address,
+        city: formData.city,
+        state: formData.state,
+        country: 'India'
+      };
+      formDataToSend.append('address', JSON.stringify(addressObj));
+      
       if (profileImage) {
         formDataToSend.append('profileImage', profileImage);
       }
+      
+      // Add default fields that backend might expect
+      formDataToSend.append('slug', formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'));
+      formDataToSend.append('description', `${formData.name} - Professional diagnostic laboratory`);
+      formDataToSend.append('website', '');
 
       console.log('Calling registerLaboratory API...');
+      console.log('FormData contents:');
+      for (let [key, value] of formDataToSend.entries()) {
+        console.log(key, value);
+      }
+      
       const result = await registerLaboratory(formDataToSend).unwrap();
       console.log('API response:', result);
       toast.success(result.message || 'Registration successful! Please verify your OTP.');
