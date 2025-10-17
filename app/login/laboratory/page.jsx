@@ -1,149 +1,159 @@
-"use client";
+// "use client";
 
-import React, { useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useDispatch } from "react-redux";
-import { FaFlask, FaEye, FaEyeSlash } from "react-icons/fa";
-import { motion } from "framer-motion";
-import { setCredentials } from "@/lib/store/slices/authSlice";
-import { useLoginLaboratoryMutation } from "@/lib/store/api/laboratoryApi";
-import { toast } from "react-toastify";
+// import React, { useState } from "react";
+// import Link from "next/link";
+// import { useRouter } from "next/navigation";
+// import { useDispatch } from "react-redux";
+// import { FaFlask, FaEye, FaEyeSlash } from "react-icons/fa";
+// import { motion } from "framer-motion";
+// import { setCredentials } from "@/lib/store/slices/authSlice";
+// import { useLoginLaboratoryMutation } from "@/lib/store/api/laboratoryApi";
+// import { toast } from "react-toastify";
 
-export default function LaboratoryLogin() {
-  const [formData, setFormData] = useState({ email: "", password: "" });
-  const [showPassword, setShowPassword] = useState(false);
-  const router = useRouter();
-  const dispatch = useDispatch();
-  const [loginLaboratory, { isLoading }] = useLoginLaboratoryMutation();
+// export default function LaboratoryLogin() {
+//   const [formData, setFormData] = useState({ email: "", password: "" });
+//   const [showPassword, setShowPassword] = useState(false);
+//   const router = useRouter();
+//   const dispatch = useDispatch();
+//   const [loginLaboratory, { isLoading }] = useLoginLaboratoryMutation();
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
+//   if (isLoading) {
+//     return <div>Loading...</div>;
+//   }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
 
-    try {
-      const result = await loginLaboratory(formData).unwrap();
+//     try {
+//       const result = await loginLaboratory(formData).unwrap();
       
-      // Set authentication state
-      dispatch(setCredentials({
-        user: result.user,
-        token: result.token,
-        role: result.lab.role
-      }));
+//       // Set authentication state
+//       dispatch(setCredentials({
+//         user: result.user,
+//         token: result.token,
+//         role: result.lab.role
+//       }));
       
-      toast.success("Login successful!");
+//       toast.success("Login successful!");
       
-      // Redirect immediately
-      if (result.lab.isApproved) {
-        router.push("/laboratory/dashboard");
-      } else {
-        router.push("/verification-pending");
-      }
-    } catch (error) {
-      toast.error(error?.data?.message || "Login failed. Please try again.");
-    }
-  };
+//       // Redirect immediately
+//       if (result.lab.isApproved) {
+//         router.push("/laboratory/dashboard");
+//       } else {
+//         router.push("/verification-pending");
+//       }
+//     } catch (error) {
+//       toast.error(error?.data?.message || "Login failed. Please try again.");
+//     }
+//   };
 
-  const handleChange = (e) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
+//   const handleChange = (e) => {
+//     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+//   };
 
+//   return (
+//     <main className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center px-4">
+//       <motion.div
+//         initial={{ opacity: 0, y: 20 }}
+//         animate={{ opacity: 1, y: 0 }}
+//         className="w-full max-w-md"
+//       >
+//         <div className="bg-white rounded-2xl shadow-xl p-8">
+//           <div className="text-center mb-8">
+//             {/* Gradient circle icon */}
+//             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-green-500 rounded-full mb-4">
+//               <FaFlask className="w-8 h-8 text-white" />
+//             </div>
+//             {/* Gradient heading */}
+//             <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-500 to-green-500 bg-clip-text text-transparent">
+//               Laboratory Login
+//             </h1>
+//             <p className="text-gray-600 mt-2">Access your laboratory dashboard</p>
+//           </div>
+
+//           <form onSubmit={handleSubmit} className="space-y-6">
+//             <div>
+//               <label className="block text-sm font-medium text-gray-700 mb-2">
+//                 Laboratory Email
+//               </label>
+//               <input
+//                 type="email"
+//                 name="email"
+//                 value={formData.email}
+//                 onChange={handleChange}
+//                 required
+//                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+//                 placeholder="Enter your laboratory email"
+//               />
+//             </div>
+
+//             <div>
+//               <label className="block text-sm font-medium text-gray-700 mb-2">
+//                 Password
+//               </label>
+//               <div className="relative">
+//                 <input
+//                   type={showPassword ? "text" : "password"}
+//                   name="password"
+//                   value={formData.password}
+//                   onChange={handleChange}
+//                   required
+//                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-12"
+//                   placeholder="Enter your password"
+//                 />
+//                 <button
+//                   type="button"
+//                   onClick={() => setShowPassword(!showPassword)}
+//                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+//                 >
+//                   {showPassword ? <FaEyeSlash /> : <FaEye />}
+//                 </button>
+//               </div>
+//             </div>
+
+//             {/* Gradient button */}
+//             <button
+//               type="submit"
+//               disabled={isLoading}
+//               className="w-full bg-gradient-to-r from-blue-500 to-green-500 text-white py-3 rounded-lg font-medium hover:opacity-90 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 transition-colors"
+//             >
+//               {isLoading ? "Signing in..." : "Sign In"}
+//             </button>
+//           </form>
+
+//           <div className="mt-6 text-center">
+//             <p className="text-gray-600">
+//               Need to register your practice?{" "}
+//               <Link
+//                 href="/sign-up/laboratory"
+//                 className="font-medium bg-gradient-to-r from-blue-500 to-green-500 bg-clip-text text-transparent hover:opacity-80"
+//               >
+//                 Sign up
+//               </Link>
+//             </p>
+//           </div>
+
+//           {/* Back to role selection with border */}
+//           <div className="mt-6 text-center">
+//             <Link
+//               href="/login"
+//               className="inline-block px-4 py-2 text-sm font-medium text-green-600 border border-green-600 rounded-lg hover:bg-green-50 transition"
+//             >
+//               ← Back to role selection
+//             </Link>
+//           </div>
+//         </div>
+//       </motion.div>
+//     </main>
+//   );
+// }
+
+import LaboratoryLogin from "@/components/Login/LaboratoryLogin";
+
+export default function LaboratoryLoginPage() {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center px-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md"
-      >
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <div className="text-center mb-8">
-            {/* Gradient circle icon */}
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-green-500 rounded-full mb-4">
-              <FaFlask className="w-8 h-8 text-white" />
-            </div>
-            {/* Gradient heading */}
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-500 to-green-500 bg-clip-text text-transparent">
-              Laboratory Login
-            </h1>
-            <p className="text-gray-600 mt-2">Access your laboratory dashboard</p>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Laboratory Email
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="Enter your laboratory email"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-12"
-                  placeholder="Enter your password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-                >
-                  {showPassword ? <FaEyeSlash /> : <FaEye />}
-                </button>
-              </div>
-            </div>
-
-            {/* Gradient button */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-gradient-to-r from-blue-500 to-green-500 text-white py-3 rounded-lg font-medium hover:opacity-90 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 transition-colors"
-            >
-              {isLoading ? "Signing in..." : "Sign In"}
-            </button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-gray-600">
-              Need to register your practice?{" "}
-              <Link
-                href="/sign-up/laboratory"
-                className="font-medium bg-gradient-to-r from-blue-500 to-green-500 bg-clip-text text-transparent hover:opacity-80"
-              >
-                Sign up
-              </Link>
-            </p>
-          </div>
-
-          {/* Back to role selection with border */}
-          <div className="mt-6 text-center">
-            <Link
-              href="/login"
-              className="inline-block px-4 py-2 text-sm font-medium text-green-600 border border-green-600 rounded-lg hover:bg-green-50 transition"
-            >
-              ← Back to role selection
-            </Link>
-          </div>
-        </div>
-      </motion.div>
-    </main>
+    <div>
+      <LaboratoryLogin />
+    </div>
   );
-}
+} 

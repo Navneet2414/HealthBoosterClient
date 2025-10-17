@@ -1,16 +1,38 @@
 "use client";
 
-import { useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useGetDoctorByIdQuery, useBookDoctorAppointmentMutation } from "@/lib/store/api/doctorApi";
 import { FaCalendarAlt, FaClock, FaUser, FaCreditCard, FaLock } from "react-icons/fa";
 import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
+import Link from "next/link";
 
-export default function BookAppointmentPage() {
-    const searchParams = useSearchParams();
-    const doctorName = searchParams.get('doctor') || 'Dr. Smith';
-    const consultationFee = searchParams.get('fee') || '500';
-    const specialization = searchParams.get('specialization') || 'General';
-    const clinic = searchParams.get('clinic') || 'HealthBooster Clinic';
+export default function DoctorAppointment({ params }) {
+    const [unwrappedParams, setUnwrappedParams] = useState(null);
+    
+    useEffect(() => {
+        const resolveParams = async () => {
+            const resolved = await params;
+            setUnwrappedParams(resolved);
+        };
+        resolveParams();
+    }, [params]);
+    
+    const { data: doctorData, isLoading: doctorLoading, error: doctorError } = useGetDoctorByIdQuery(
+        unwrappedParams?.id, 
+        { skip: !unwrappedParams?.id }
+    );
+    
+    const doctor = doctorData?.doctor;
+    const doctorName = doctor?.name || 'Loading...';
+    const consultationFee = doctor?.consultationFee || '500';
+    const specialization = doctor?.specialization || unwrappedParams?.speciality || 'General';
+    const city = doctor?.city || doctor?.location || 'India';
+    const clinic = doctor?.clinic || 'HealthBooster Clinic';
+    
+    // Get user from Redux store
+    const { user, isAuthenticated } = useSelector((state) => state.auth);
+    const userId = user?._id || user?.id;
     
     const [step, setStep] = useState(1);
     const [appointmentData, setAppointmentData] = useState({
@@ -20,7 +42,9 @@ export default function BookAppointmentPage() {
         patientName: '',
         phone: '',
         email: '',
-        symptoms: ''
+        symptoms: '',
+        age: '',
+        gender: 'Male'
     });
     
     const [paymentData, setPaymentData] = useState({
@@ -30,6 +54,8 @@ export default function BookAppointmentPage() {
         cardName: '',
         paymentMethod: 'card'
     });
+    
+    const [bookAppointment, { isLoading: bookingLoading }] = useBookDoctorAppointmentMutation();
 
     const timeSlots = [
         '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM',
@@ -39,6 +65,12 @@ export default function BookAppointmentPage() {
 
     const handleAppointmentSubmit = (e) => {
         e.preventDefault();
+        
+        if (!isAuthenticated || !userId) {
+            toast.error('Please login first to book an appointment');
+            return;
+        }
+        
         if (!appointmentData.date || !appointmentData.time || !appointmentData.patientName) {
             toast.error('Please fill all required fields');
             return;
@@ -46,27 +78,90 @@ export default function BookAppointmentPage() {
         setStep(2);
     };
 
-    const handlePayment = (e) => {
+    const handlePayment = async (e) => {
         e.preventDefault();
         if (paymentData.paymentMethod === 'card' && (!paymentData.cardNumber || !paymentData.expiryDate || !paymentData.cvv)) {
             toast.error('Please fill all payment details');
             return;
         }
         
-        // Simulate payment processing
-        toast.success('Payment successful! Appointment booked.');
-        setStep(3);
+        try {
+            if (!isAuthenticated || !userId) {
+                toast.error('Please login first to book an appointment');
+                return;
+            }
+            
+            const appointmentPayload = {
+                doctorId: doctor._id,
+                userId: userId,
+                patientName: appointmentData.patientName,
+                patientEmail: appointmentData.email,
+                patientAge: parseInt(appointmentData.age) || 25,
+                consultationType: appointmentData.type === 'clinic' ? 'Clinic Visit' : 'Video Call',
+                countryCode: "+91",
+                patientNumber: parseInt(appointmentData.phone),
+                symptoms: appointmentData.symptoms,
+                appointmentDate: appointmentData.date,
+                appointmentTime: appointmentData.time,
+                patientGender: appointmentData.gender
+            };
+            
+            await bookAppointment(appointmentPayload).unwrap();
+            toast.success('Payment successful! Appointment booked.');
+            setStep(3);
+        } catch (error) {
+            toast.error(error?.data?.message || 'Failed to book appointment');
+        }
     };
 
+    if (!unwrappedParams) {
+        return <div className="text-center py-8">Loading...</div>;
+    }
+    
+    if (doctorLoading) {
+        return <div className="text-center py-8">Loading doctor details...</div>;
+    }
+    
+    if (doctorError || !doctor) {
+        return <div className="text-center py-8">Error loading doctor details. Please try again.</div>;
+    }
+    
+    // Show login prompt if user is not authenticated
+    if (!isAuthenticated || !userId) {
+        return (
+            <div className="max-w-4xl mx-auto px-4 py-8">
+                <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+                    <FaUser className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                    <h2 className="text-2xl font-bold text-gray-800 mb-4">Login Required</h2>
+                    <p className="text-gray-600 mb-6">Please login first to book an appointment with {doctorName}</p>
+                    <div className="space-y-4">
+                        <Link 
+                            href="/login/user" 
+                            className="inline-block bg-gradient-to-r from-blue-500 to-green-500 text-white px-8 py-3 rounded-lg font-medium hover:opacity-90 transition mr-4"
+                        >
+                            Login
+                        </Link>
+                        <Link 
+                            href="/sign-up/user" 
+                            className="inline-block border border-blue-500 text-blue-500 px-8 py-3 rounded-lg font-medium hover:bg-blue-50 transition"
+                        >
+                            Register
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className=" mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto px-4 py-8">
             <div className="bg-white rounded-xl shadow-lg p-8">
                 {/* Header */}
                 <div className="text-center mb-8">
                     <h1 className="text-3xl font-bold text-gray-800 mb-2">Book Appointment</h1>
                     <div className="text-gray-600">
                         <p className="text-lg font-medium">{doctorName}</p>
-                        <p className="text-sm">{specialization} • {clinic}</p>
+                        <p className="text-sm">{specialization} • {city} • {clinic}</p>
                     </div>
                 </div>
 
@@ -138,8 +233,18 @@ export default function BookAppointmentPage() {
                             </label>
                             <input
                                 type="date"
-                                value={appointmentData.date}
-                                onChange={(e) => setAppointmentData({...appointmentData, date: e.target.value})}
+                                value={appointmentData.date ? 
+                                    appointmentData.date.split('/').reverse().join('-') : ''}
+                                onChange={(e) => {
+                                    const dateValue = e.target.value;
+                                    if (dateValue) {
+                                        const [year, month, day] = dateValue.split('-');
+                                        const formattedDate = `${day}/${month}/${year}`;
+                                        setAppointmentData({...appointmentData, date: formattedDate});
+                                    } else {
+                                        setAppointmentData({...appointmentData, date: ''});
+                                    }
+                                }}
                                 min={new Date().toISOString().split('T')[0]}
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                                 required
@@ -193,15 +298,66 @@ export default function BookAppointmentPage() {
                             </div>
                         </div>
 
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                                <input
+                                    type="email"
+                                    value={appointmentData.email}
+                                    onChange={(e) => setAppointmentData({...appointmentData, email: e.target.value})}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Age</label>
+                                <input
+                                    type="number"
+                                    value={appointmentData.age}
+                                    onChange={(e) => setAppointmentData({...appointmentData, age: e.target.value})}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                    required
+                                />
+                            </div>
+                        </div>
+                        
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                            <input
-                                type="email"
-                                value={appointmentData.email}
-                                onChange={(e) => setAppointmentData({...appointmentData, email: e.target.value})}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                required
-                            />
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                            <div className="flex space-x-4">
+                                <label className="flex items-center">
+                                    <input
+                                        type="radio"
+                                        name="gender"
+                                        value="Male"
+                                        checked={appointmentData.gender === 'Male'}
+                                        onChange={(e) => setAppointmentData({...appointmentData, gender: e.target.value})}
+                                        className="mr-2"
+                                    />
+                                    Male
+                                </label>
+                                <label className="flex items-center">
+                                    <input
+                                        type="radio"
+                                        name="gender"
+                                        value="Female"
+                                        checked={appointmentData.gender === 'Female'}
+                                        onChange={(e) => setAppointmentData({...appointmentData, gender: e.target.value})}
+                                        className="mr-2"
+                                    />
+                                    Female
+                                </label>
+                                <label className="flex items-center">
+                                    <input
+                                        type="radio"
+                                        name="gender"
+                                        value="Other"
+                                        checked={appointmentData.gender === 'Other'}
+                                        onChange={(e) => setAppointmentData({...appointmentData, gender: e.target.value})}
+                                        className="mr-2"
+                                    />
+                                    Other
+                                </label>
+                            </div>
                         </div>
 
                         <div>
@@ -234,6 +390,8 @@ export default function BookAppointmentPage() {
                             <h3 className="font-semibold text-gray-800 mb-3">Appointment Summary</h3>
                             <div className="space-y-2 text-sm">
                                 <p><span className="font-medium">Doctor:</span> {doctorName}</p>
+                                <p><span className="font-medium">Specialization:</span> {specialization}</p>
+                                <p><span className="font-medium">City:</span> {city}</p>
                                 <p><span className="font-medium">Date:</span> {appointmentData.date}</p>
                                 <p><span className="font-medium">Time:</span> {appointmentData.time}</p>
                                 <p><span className="font-medium">Type:</span> {appointmentData.type === 'clinic' ? 'Clinic Visit' : 'Video Call'}</p>
@@ -294,7 +452,7 @@ export default function BookAppointmentPage() {
                                             type="text"
                                             value={paymentData.expiryDate}
                                             onChange={(e) => setPaymentData({...paymentData, expiryDate: e.target.value})}
-                                            placeholder="MM/YY"
+                                            placeholder="DD/MM/YY"
                                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                                             required
                                         />
@@ -324,10 +482,11 @@ export default function BookAppointmentPage() {
                                 </div>
                                 <button
                                     type="submit"
-                                    className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white py-3 rounded-lg font-medium hover:opacity-90 transition flex items-center justify-center"
+                                    disabled={bookingLoading}
+                                    className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white py-3 rounded-lg font-medium hover:opacity-90 transition flex items-center justify-center disabled:opacity-50"
                                 >
                                     <FaLock className="mr-2" />
-                                    Pay ₹{consultationFee}
+                                    {bookingLoading ? 'Processing...' : `Pay ₹${consultationFee}`}
                                 </button>
                             </form>
                         )}
@@ -344,9 +503,10 @@ export default function BookAppointmentPage() {
                                 </div>
                                 <button
                                     onClick={handlePayment}
-                                    className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white py-3 rounded-lg font-medium hover:opacity-90 transition"
+                                    disabled={bookingLoading}
+                                    className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white py-3 rounded-lg font-medium hover:opacity-90 transition disabled:opacity-50"
                                 >
-                                    I have paid ₹{consultationFee}
+                                    {bookingLoading ? 'Processing...' : `I have paid ₹${consultationFee}`}
                                 </button>
                             </div>
                         )}

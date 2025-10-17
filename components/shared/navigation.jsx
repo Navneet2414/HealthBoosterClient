@@ -1,4 +1,4 @@
-"use client"; 
+"use client";
 
 import { useState } from "react";
 import { FaStethoscope, FaBars, FaTimes } from "react-icons/fa";
@@ -26,7 +26,7 @@ export default function Navbar() {
                 <div className="flex items-center space-x-2">
                     {/* <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-green-400 to-blue-500 rounded-xl"> */}
                     {/* <FaStethoscope className="text-white text-xl" /> */}
-                    <div className="relative w-20 h-12 bg-white rounded-md overflow-hidden">
+                    <Link href="/" className="relative w-20 h-12 bg-white rounded-md overflow-hidden">
                         <Image
                             src="/images/logoedited.png"
                             alt="HealthBooster logo"
@@ -34,18 +34,19 @@ export default function Navbar() {
                             className="rounded-full object-cover"
                             priority
                         />
-                    </div>
+                    </Link>
                     {/* </div> */}
                     {/* <span className="text-xl font-bold text-gray-800">HealthBooster</span> */}
-                    <span
-                        className="text-xl font-bold 
+                    <Link href="/">
+                        <span
+                            className="text-xl font-bold 
              bg-gradient-to-r from-green-400 via-green-500 to-blue-600 
              bg-clip-text text-transparent 
              animate-text"
-                    >
-                        HealthBooster
-                    </span>
-
+                        >
+                            HealthBooster
+                        </span>
+                    </Link>
 
 
                 </div>
