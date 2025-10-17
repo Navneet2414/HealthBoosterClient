@@ -2,9 +2,9 @@
 
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import Schedule from "@/components/doctor/schedule";
-import PatientRecord from "@/components/doctor/patientRecord";
-import Prescriptions from "@/components/doctor/prescriptions";
+import Schedule from "@/components/doctor/Dashboard/schedule";
+import PatientRecord from "@/components/doctor/Dashboard/patientRecord";
+import Prescriptions from "@/components/doctor/Dashboard/prescriptions";
 
 import {
   FaCalendarAlt,

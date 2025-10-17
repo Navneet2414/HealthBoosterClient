@@ -1,4 +1,5 @@
 "use client";
+import Link from 'next/link';
 import { useState } from 'react';
 import { FaUserMd, FaShieldAlt, FaClock, FaSearch, FaStethoscope, FaCapsules, FaFlask } from "react-icons/fa";
 export default function HomeDashboard() {
@@ -139,9 +140,9 @@ export default function HomeDashboard() {
                     </svg>
                     Book Appointment
                 </button>
-                <button className="px-6 py-3 border border-gray-300 text-white   font-bold rounded-lg hover:bg-green-500 transition flex items-center gap-2">
+                <Link href="/emergency-care" className="px-6 py-3 border border-gray-300 text-white   font-bold rounded-lg hover:bg-green-500 transition flex items-center gap-2">
                     Emergency Care
-                </button>
+                </Link>
             </div>
         </section>
     );
