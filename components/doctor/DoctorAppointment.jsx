@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useGetDoctorByIdQuery, useBookDoctorAppointmentMutation } from "@/lib/store/api/doctorApi";
-import { FaCalendarAlt, FaClock, FaUser, FaCreditCard, FaLock } from "react-icons/fa";
+import { FaCalendarAlt, FaClock, FaUser, FaCreditCard, FaLock, FaFileInvoice, FaDownload } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 import Link from "next/link";
@@ -385,20 +385,105 @@ export default function DoctorAppointment({ params }) {
                     <div className="space-y-6">
                         <h2 className="text-2xl font-semibold text-gray-800 mb-4">Payment Details</h2>
                         
-                        {/* Appointment Summary */}
-                        <div className="bg-gray-50 rounded-lg p-6 mb-6">
-                            <h3 className="font-semibold text-gray-800 mb-3">Appointment Summary</h3>
-                            <div className="space-y-2 text-sm">
-                                <p><span className="font-medium">Doctor:</span> {doctorName}</p>
-                                <p><span className="font-medium">Specialization:</span> {specialization}</p>
-                                <p><span className="font-medium">City:</span> {city}</p>
-                                <p><span className="font-medium">Date:</span> {appointmentData.date}</p>
-                                <p><span className="font-medium">Time:</span> {appointmentData.time}</p>
-                                <p><span className="font-medium">Type:</span> {appointmentData.type === 'clinic' ? 'Clinic Visit' : 'Video Call'}</p>
-                                <p><span className="font-medium">Patient:</span> {appointmentData.patientName}</p>
-                                <div className="border-t pt-2 mt-3">
-                                    <p className="text-lg font-bold text-green-600">Total: ₹{consultationFee}</p>
+                        {/* Professional Invoice */}
+                        <div className="bg-white border-2 border-gray-200 rounded-lg p-6 mb-6 shadow-sm relative overflow-hidden">
+                            {/* Payment Status Watermark */}
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
+                                <div className="transform rotate-45 text-8xl font-bold text-gray-400 select-none opacity-30">
+                                    {step === 3 ? 'PAID' : 'PENDING'}
                                 </div>
+                            </div>
+                            <div className="relative z-10">
+                            <div className="flex justify-between items-start mb-6">
+                                <div>
+                                    <div className="flex items-center mb-2">
+                                        <FaFileInvoice className="text-blue-500 mr-2" />
+                                        <h3 className="text-xl font-bold text-gray-800">INVOICE</h3>
+                                    </div>
+                                    <p className="text-sm text-gray-600">Invoice #: INV-{new Date().getFullYear()}-{Math.random().toString(36).substr(2, 6).toUpperCase()}</p>
+                                    <p className="text-sm text-gray-600">Date: {new Date().toLocaleDateString('en-IN')}</p>
+                                </div>
+                                <div className="text-right">
+                                    <h4 className="font-bold text-blue-600 text-lg">HealthBooster</h4>
+                                    <p className="text-sm text-gray-600">Healthcare Platform</p>
+                                    <p className="text-sm text-gray-600">support@healthbooster.com</p>
+                                    <p className="text-sm text-gray-600">+91 6394832414</p>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                <div>
+                                    <h5 className="font-semibold text-gray-800 mb-2">Bill To:</h5>
+                                    <div className="text-sm text-gray-600">
+                                        <p className="font-medium">{appointmentData.patientName}</p>
+                                        <p>{appointmentData.email}</p>
+                                        <p>+91 {appointmentData.phone}</p>
+                                        <p>Age: {appointmentData.age} years</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h5 className="font-semibold text-gray-800 mb-2">Service Provider:</h5>
+                                    <div className="text-sm text-gray-600">
+                                        <p className="font-medium">{doctorName}</p>
+                                        <p>{specialization}</p>
+                                        <p>{clinic}</p>
+                                        <p>{city}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="border-t border-b border-gray-200 py-4 mb-4">
+                                <div className="grid grid-cols-4 gap-4 text-sm font-semibold text-gray-700 mb-2">
+                                    <div>Service</div>
+                                    <div>Date & Time</div>
+                                    <div>Type</div>
+                                    <div className="text-right">Amount</div>
+                                </div>
+                                <div className="grid grid-cols-4 gap-4 text-sm text-gray-600">
+                                    <div>Medical Consultation</div>
+                                    <div>{appointmentData.date} at {appointmentData.time}</div>
+                                    <div>{appointmentData.type === 'clinic' ? 'Clinic Visit' : 'Video Call'}</div>
+                                    <div className="text-right">₹{consultationFee}</div>
+                                </div>
+                            </div>
+
+                            <div className="flex justify-between items-center">
+                                <div className="text-sm text-gray-600">
+                                    <p>Payment Terms: Immediate</p>
+                                    <p>GST: Included</p>
+                                </div>
+                                <div className="text-right">
+                                    <div className="text-sm text-gray-600 mb-1">
+                                        <div className="flex justify-between w-32">
+                                            <span>Subtotal:</span>
+                                            <span>₹{consultationFee}</span>
+                                        </div>
+                                        <div className="flex justify-between w-32">
+                                            <span>GST (18%):</span>
+                                            <span>₹{Math.round(consultationFee * 0.18)}</span>
+                                        </div>
+                                    </div>
+                                    <div className="border-t pt-2">
+                                        <div className="flex justify-between w-32 text-lg font-bold text-green-600">
+                                            <span>Total:</span>
+                                            <span>₹{Math.round(consultationFee * 1.18)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="mt-4 pt-4 border-t border-gray-200">
+                                <div className="flex justify-between items-center">
+                                    <p className="text-xs text-gray-500">This is a computer generated invoice</p>
+                                    <button 
+                                        onClick={() => window.print()}
+                                        className="flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium transition"
+                                    >
+                                        <FaDownload className="mr-1" />
+                                        Download Invoice
+                                    </button>
+                                </div>
+                            </div>
                             </div>
                         </div>
 
@@ -486,7 +571,7 @@ export default function DoctorAppointment({ params }) {
                                     className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white py-3 rounded-lg font-medium hover:opacity-90 transition flex items-center justify-center disabled:opacity-50"
                                 >
                                     <FaLock className="mr-2" />
-                                    {bookingLoading ? 'Processing...' : `Pay ₹${consultationFee}`}
+                                    {bookingLoading ? 'Processing...' : `Pay ₹${Math.round(consultationFee * 1.18)}`}
                                 </button>
                             </form>
                         )}
@@ -494,19 +579,43 @@ export default function DoctorAppointment({ params }) {
                         {/* UPI Payment */}
                         {paymentData.paymentMethod === 'upi' && (
                             <div className="text-center space-y-4">
-                                <div className="bg-gray-100 p-8 rounded-lg">
-                                    <div className="w-32 h-32 bg-black mx-auto mb-4 flex items-center justify-center text-white">
-                                        QR CODE
+                                <div className="bg-gradient-to-br from-blue-50 to-green-50 p-8 rounded-lg border border-blue-200">
+                                    <div className="bg-white p-4 rounded-lg shadow-sm mb-4 inline-block">
+                                        <img 
+                                            src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=${doctorName?.toLowerCase().replace(/\s+/g, '')}@paytm&pn=Dr.%20${doctorName}&am=${Math.round(consultationFee * 1.18)}&cu=INR&tn=Medical%20Consultation`}
+                                            alt="UPI QR Code"
+                                            className="w-32 h-32 mx-auto"
+                                            onError={(e) => {
+                                                e.target.style.display = 'none';
+                                                e.target.nextSibling.style.display = 'flex';
+                                            }}
+                                        />
+                                        <div className="w-32 h-32 bg-gradient-to-br from-blue-500 to-green-500 mx-auto items-center justify-center text-white font-bold text-xs rounded hidden">
+                                            QR CODE
+                                        </div>
                                     </div>
-                                    <p className="text-sm text-gray-600">Scan QR code with any UPI app</p>
-                                    <p className="font-medium">UPI ID: doctor@healthbooster</p>
+                                    <div className="space-y-2">
+                                        <p className="text-sm text-gray-700 font-medium">Scan QR code with any UPI app</p>
+                                        <div className="bg-white p-3 rounded border">
+                                            <p className="text-xs text-gray-500 mb-1">UPI ID:</p>
+                                            <p className="font-mono text-sm font-medium text-blue-600">{doctorName?.toLowerCase().replace(/\s+/g, '')}@paytm</p>
+                                        </div>
+                                        <div className="bg-white p-3 rounded border">
+                                            <p className="text-xs text-gray-500 mb-1">Amount:</p>
+                                            <p className="font-bold text-lg text-green-600">₹{Math.round(consultationFee * 1.18)}</p>
+                                        </div>
+                                        <div className="bg-white p-3 rounded border">
+                                            <p className="text-xs text-gray-500 mb-1">Payee:</p>
+                                            <p className="font-medium text-sm"> {doctorName}</p>
+                                        </div>
+                                    </div>
                                 </div>
                                 <button
                                     onClick={handlePayment}
                                     disabled={bookingLoading}
                                     className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white py-3 rounded-lg font-medium hover:opacity-90 transition disabled:opacity-50"
                                 >
-                                    {bookingLoading ? 'Processing...' : `I have paid ₹${consultationFee}`}
+                                    {bookingLoading ? 'Processing...' : `I have paid ₹${Math.round(consultationFee * 1.18)}`}
                                 </button>
                             </div>
                         )}

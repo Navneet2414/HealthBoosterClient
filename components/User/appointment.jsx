@@ -3,51 +3,22 @@
 import { FaVideo, FaStar, FaRegStar } from "react-icons/fa";
 import { MdOutlineLocationOn } from "react-icons/md";
 import { BsCalendar, BsClock } from "react-icons/bs";
+import { useAuth } from "../../lib/hooks/useAuth";
+import { useGetUserAppointmentsQuery } from "../../lib/store/api/userApi";
 
 export default function AppointmentsPage() {
-  const upcomingAppointments = [
-    {
-      id: 1,
-      name: "Dr. Rajesh Kumar",
-      specialty: "Cardiologist",
-      date: "Today",
-      time: "2:30 PM",
-      type: "Video Consultation",
-      status: "Confirmed",
-    },
-    {
-      id: 2,
-      name: "Dr. Priya Sharma",
-      specialty: "Dermatologist",
-      date: "Tomorrow",
-      time: "10:00 AM",
-      type: "In-person Visit",
-      status: "Confirmed",
-    },
-  ];
+  const { user, isAuthenticated } = useAuth();
+  const userId = user?.id;
+  
+  const { data, isLoading, error } = useGetUserAppointmentsQuery(userId, {
+    skip: !userId
+  });
 
-  const pastAppointments = [
-    {
-      id: 1,
-      name: "Dr. Amit Verma",
-      specialty: "Orthopedic",
-      date: "Dec 10, 2024",
-      time: "4:00 PM",
-      type: "In-person Visit",
-      status: "Completed",
-      rating: 5,
-    },
-    {
-      id: 2,
-      name: "Dr. Sneha Patel",
-      specialty: "Pediatrician",
-      date: "Dec 5, 2024",
-      time: "11:30 AM",
-      type: "Video Consultation",
-      status: "Completed",
-      rating: 4,
-    },
-  ];
+  if (!isAuthenticated || !userId) return <div className="text-center py-8">Please log in to view appointments</div>;
+  if (isLoading) return <div className="text-center py-8">Loading appointments...</div>;
+  if (error) return <div className="text-center py-8 text-red-500">Error loading appointments</div>;
+
+  const { today = [], upcoming = [], past = [] } = data?.bookings || {};
 
   return (
     <div className=" bg-gray-50 flex flex-col items-center px-4 py-6">
@@ -55,17 +26,36 @@ export default function AppointmentsPage() {
         {/* Upcoming Appointments */}
         <h2 className="text-xl font-semibold mb-4">Upcoming Appointments</h2>
         <div className="space-y-4">
-          {upcomingAppointments.map((appt) => (
-            <AppointmentCard key={appt.id} appointment={appt} type="upcoming" />
-          ))}
+          {today.length > 0 && (
+            <>
+              <h3 className="text-lg font-medium text-gray-700">Today</h3>
+              {today.map((appt) => (
+                <AppointmentCard key={appt._id} appointment={appt} type="today" />
+              ))}
+            </>
+          )}
+          {upcoming.length > 0 ? (
+            <>
+              <h3 className="text-lg font-medium text-gray-700">Upcoming</h3>
+              {upcoming.map((appt) => (
+                <AppointmentCard key={appt._id} appointment={appt} type="upcoming" />
+              ))}
+            </>
+          ) : (
+            !today.length && <p className="text-gray-500">No upcoming appointments</p>
+          )}
         </div>
 
         {/* Past Appointments */}
         <h2 className="text-xl font-semibold mt-8 mb-4">Past Appointments</h2>
         <div className="space-y-4">
-          {pastAppointments.map((appt) => (
-            <AppointmentCard key={appt.id} appointment={appt} type="past" />
-          ))}
+          {past.length > 0 ? (
+            past.map((appt) => (
+              <AppointmentCard key={appt._id} appointment={appt} type="past" />
+            ))
+          ) : (
+            <p className="text-gray-500">No past appointments</p>
+          )}
         </div>
       </div>
     </div>
@@ -73,8 +63,18 @@ export default function AppointmentsPage() {
 }
 
 function AppointmentCard({ appointment, type }) {
-  const { name, specialty, date, time, status, rating, type: visitType } =
-    appointment;
+  const { 
+    doctorName, 
+    specialization, 
+    appointmentDate, 
+    appointmentTime, 
+    status, 
+    rating, 
+    consultationType,
+    paymentStatus ,
+    patientName,
+    patientAge
+  } = appointment;
 
   return (
     <div className="bg-white rounded-xl shadow p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center">
@@ -86,20 +86,28 @@ function AppointmentCard({ appointment, type }) {
         </div>
 
         <div>
-          <h3 className="text-lg font-semibold text-gray-800">{name}</h3>
-          <p className="text-blue-600 text-sm">{specialty}</p>
+          <h3 className="text-lg font-semibold text-gray-800">{doctorName}</h3>
+          <p className="text-blue-600 text-sm">{specialization}</p>
+          <p className="text-gray-600 text-sm">
+            <span className="font-medium">Patient:</span> {patientName} • 
+            <span className="font-medium">Age:</span> {patientAge}
+          </p>
+          
           <div className="flex items-center gap-3 mt-1 text-sm text-gray-500 flex-wrap">
             <span className="flex items-center gap-1">
-              <BsCalendar /> {date}
+              <BsCalendar /> {appointmentDate}
             </span>
             <span className="flex items-center gap-1">
-              <BsClock /> {time}
+              <BsClock /> {appointmentTime}
             </span>
             <span className="flex items-center gap-1">
-              {visitType.includes("Video") ? <FaVideo /> : <MdOutlineLocationOn />}
-              {visitType}
+              {consultationType.includes("Video") ? <FaVideo /> : <MdOutlineLocationOn />}
+              {consultationType}
             </span>
           </div>
+          {paymentStatus === "unpaid" && (
+            <span className="text-red-500 text-xs mt-1 block">Payment Pending</span>
+          )}
         </div>
       </div>
 
@@ -107,7 +115,7 @@ function AppointmentCard({ appointment, type }) {
       <div className="flex items-center gap-2 mt-3 sm:mt-0">
         <StatusBadge status={status} />
 
-        {type === "upcoming" ? (
+        {(type === "upcoming" || type === "today") ? (
           <>
             <button className="border border-blue-400 text-blue-500 px-3 py-1 rounded-md text-sm hover:bg-blue-50">
               Reschedule
@@ -130,16 +138,18 @@ function AppointmentCard({ appointment, type }) {
 }
 
 function StatusBadge({ status }) {
-  const colors =
-    status === "Confirmed" || status === "Completed"
-      ? "bg-green-100 text-green-700"
-      : "bg-yellow-100 text-yellow-700";
+  const colors = {
+    confirmed: "bg-green-100 text-green-700",
+    completed: "bg-green-100 text-green-700",
+    pending: "bg-yellow-100 text-yellow-700",
+    cancelled: "bg-red-100 text-red-700"
+  }[status.toLowerCase()] || "bg-gray-100 text-gray-700";
 
   return (
     <span
       className={`px-3 py-1 rounded-full text-xs font-semibold ${colors}`}
     >
-      {status}
+      {status.charAt(0).toUpperCase() + status.slice(1)}
     </span>
   );
 }
