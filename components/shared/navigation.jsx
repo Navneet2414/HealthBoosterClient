@@ -88,6 +88,14 @@ export default function Navbar() {
                             >
                                 Logout
                             </button>
+                            {/* Profile Image */}
+                            <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-green-400">
+                                <img
+                                    src={user?.profileImage || `https://ui-avatars.com/api/?name=${user?.name}&background=3b82f6&color=fff&size=40`}
+                                    alt={user?.name}
+                                    className="w-full h-full object-cover"
+                                />
+                            </div>
                         </>
                     ) : (
                         <>
@@ -139,6 +147,20 @@ export default function Navbar() {
                     <div className="flex flex-col space-y-2">
                         {isAuthenticated ? (
                             <>
+                                {/* Profile Section */}
+                                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-green-400">
+                                        <img
+                                            src={user?.profileImage || `https://ui-avatars.com/api/?name=${user?.name}&background=3b82f6&color=fff&size=40`}
+                                            alt={user?.name}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    </div>
+                                    <div>
+                                        <p className="font-medium text-gray-800">{user?.name}</p>
+                                        <p className="text-sm text-gray-500 capitalize">{user?.role}</p>
+                                    </div>
+                                </div>
                                 <Link
                                     href={`/${user?.role || 'user'}/dashboard`}
                                     className="w-full text-center px-4 py-2 bg-green-100 text-green-600 font-medium rounded-lg"

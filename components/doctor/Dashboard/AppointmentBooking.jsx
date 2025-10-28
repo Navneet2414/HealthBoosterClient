@@ -1,7 +1,25 @@
 "use client";
+import { useRouter } from "next/navigation";
 import { FaCalendarAlt, FaClock, FaMoneyBillWave, FaMapMarkerAlt, FaVideo, FaPhone, FaCheckCircle } from "react-icons/fa";
 
 export default function AppointmentBooking({ doctor, city }) {
+  const router = useRouter();
+
+  const handleBookAppointment = () => {
+    const doctorSlug = doctor?.name?.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') || 'doctor';
+    const specialitySlug = doctor?.specialization?.toLowerCase() || 'general';
+    const doctorId = doctor?.id || doctor?._id;
+    
+    if (!doctorId) {
+      console.error('Doctor ID is missing:', doctor);
+      return;
+    }
+    
+    const location = city?.toLowerCase() || 'india';
+    const url = `/doctor/book-appointment/${specialitySlug}/${location}/${doctorSlug}/${doctorId}`;
+    console.log('Navigating to:', url);
+    router.push(url);
+  };
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -74,15 +92,18 @@ export default function AppointmentBooking({ doctor, city }) {
 
       {/* Consultation Options */}
       <div className="space-y-3">
-        <button className="w-full bg-gradient-to-r from-blue-500 to-green-500 text-white py-4 px-6 rounded-xl hover:from-blue-600 hover:to-green-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center gap-3 font-semibold">
+        <button 
+          onClick={handleBookAppointment}
+          className="w-full bg-gradient-to-r from-blue-500 to-green-500 text-white py-4 px-6 rounded-xl hover:from-blue-600 hover:to-green-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center gap-3 font-semibold"
+        >
           <FaCalendarAlt className="text-lg" />
-          Book In-Person Appointment
+          Book  Doctor Appointment
         </button>
         
-        <button className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white py-4 px-6 rounded-xl hover:from-green-600 hover:to-blue-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center gap-3 font-semibold">
+        {/* <button className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white py-4 px-6 rounded-xl hover:from-green-600 hover:to-blue-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center gap-3 font-semibold">
           <FaVideo className="text-lg" />
           Book Video Consultation
-        </button>
+        </button> */}
         
         <button className="w-full border-2 border-blue-500 text-blue-600 py-3 px-6 rounded-xl hover:bg-blue-50 transition-all duration-300 flex items-center justify-center gap-3 font-semibold">
           <FaPhone className="text-lg" />

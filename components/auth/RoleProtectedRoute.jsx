@@ -65,7 +65,7 @@ function ProtectedRoute({ children, allowedRoles, redirectTo, requiresVerificati
         return;
       }
 
-      if (requiresVerification && user && !user.isVerified) {
+      if (requiresVerification && user && (!user.isVerified || !user.isApproved)) {
         router.push('/verification-pending');
         return;
       }
@@ -80,7 +80,7 @@ function ProtectedRoute({ children, allowedRoles, redirectTo, requiresVerificati
     );
   }
 
-  if (requiresVerification && user && !user.isVerified) {
+  if (requiresVerification && user && (!user.isVerified || !user.isApproved)) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">

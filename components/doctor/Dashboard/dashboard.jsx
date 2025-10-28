@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 import { motion } from "framer-motion";
+import { useSelector } from "react-redux";
+import { useGetDoctorAppointmentsQuery } from "@/lib/store/api/doctorApi";
 import Schedule from "@/components/doctor/Dashboard/schedule";
 import PatientRecord from "@/components/doctor/Dashboard/patientRecord";
 import Prescriptions from "@/components/doctor/Dashboard/prescriptions";
@@ -13,12 +15,21 @@ import {
   FaPrescriptionBottleAlt,
   FaVideo,
   FaClinicMedical,
+  FaEye,
+  FaPlay,
+  FaUserMd,
+  FaClock,
+  FaCheckCircle,
 } from "react-icons/fa";
-import { MdPendingActions } from "react-icons/md";
+import { MdPendingActions, MdDashboard } from "react-icons/md";
+import { BiCalendarCheck, BiUser, BiNotepad, BiTime } from "react-icons/bi";
+import { HiOutlineClipboardList } from "react-icons/hi";
 // import { P } from "framer-motion/dist/types.d-Cjd591yU";
 
 export default function DoctorDashboard() {
   const [activeTab, setActiveTab] = useState("Appointments");
+  const { user } = useSelector((state) => state.auth);
+  const { data: appointmentsData, isLoading: appointmentsLoading } = useGetDoctorAppointmentsQuery();
 
   // ✅ Reusable Button Component
   const Button = ({ children, variant = "primary", className = "", ...props }) => {
@@ -43,45 +54,58 @@ export default function DoctorDashboard() {
   };
 
   // ✅ Reusable Card Component
-  const Card = ({ icon, label, value, color = "text-gray-800" }) => (
+  const Card = ({ icon, label, value, color = "text-gray-800", bgGradient = "from-blue-50 to-green-50" }) => (
     <motion.div
-      whileHover={{ scale: 1.03 }}
-      className="bg-white/90 rounded-2xl shadow-lg text-center p-6 hover:shadow-xl transition-all border border-white/40 backdrop-blur"
+      whileHover={{ scale: 1.05, y: -8 }}
+      className={`bg-gradient-to-br ${bgGradient} rounded-3xl shadow-xl text-center p-8 hover:shadow-2xl transition-all duration-300 border border-white/80 backdrop-blur-sm relative overflow-hidden group`}
     >
-      <div className="text-4xl mb-2">{icon}</div>
-      <p className="text-gray-600">{label}</p>
-      <p className={`text-3xl font-bold ${color}`}>{value}</p>
+      <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-white/20 backdrop-blur-sm"></div>
+      <div className="absolute top-0 right-0 w-16 h-16 bg-white/20 rounded-full -translate-y-8 translate-x-8"></div>
+      <div className="relative z-10">
+        <div className="text-5xl mb-4 transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">{icon}</div>
+        <p className="text-gray-700 font-semibold text-sm uppercase tracking-wider mb-2">{label}</p>
+        <p className={`text-4xl font-bold ${color} drop-shadow-sm`}>{value}</p>
+      </div>
     </motion.div>
   );
 
   const stats = [
     {
       label: "Today's Appointments",
-      value: 12,
-      icon: <FaCalendarAlt className="text-blue-500" />,
+      value: appointmentsLoading ? "..." : (appointmentsData?.appointments?.filter(apt => {
+        const today = new Date().toDateString();
+        return new Date(apt.appointmentDate).toDateString() === today;
+      })?.length || 0),
+      icon: <BiCalendarCheck className="text-blue-600" />,
+      bgGradient: "from-blue-50 to-blue-100",
+      color: "text-blue-700"
     },
     {
       label: "Pending Consultations",
-      value: 3,
-      icon: <MdPendingActions className="text-yellow-500" />,
+      value: appointmentsLoading ? "..." : (appointmentsData?.appointments?.filter(apt => 
+        apt.status === 'pending' || apt.status === 'confirmed'
+      )?.length || 0),
+      icon: <BiTime className="text-green-600" />,
+      bgGradient: "from-green-50 via-green-100 to-green-200",
+      color: "text-green-700"
     },
     {
       label: "Total Patients",
-      value: 156,
-      icon: <FaUsers className="text-green-500" />,
+      value: appointmentsLoading ? "..." : (appointmentsData?.appointments?.length || 0),
+      icon: <BiUser className="text-green-600" />,
+      bgGradient: "from-green-50 to-emerald-100",
+      color: "text-green-700"
     },
     {
       label: "Prescriptions",
-      value: 8,
-      icon: <FaPrescriptionBottleAlt className="text-purple-500" />,
+      value: appointmentsLoading ? "..." : (appointmentsData?.appointments?.filter(apt => apt.prescription)?.length || 0),
+      icon: <BiNotepad className="text-green-600" />,
+      bgGradient: "from-green-100 via-blue-50 to-blue-100",
+      color: "text-green-700"
     },
   ];
 
-  const appointments = [
-    { patient: "John Doe", time: "10:00 AM", type: "Online", status: "confirmed" },
-    { patient: "Jane Smith", time: "11:30 AM", type: "In-clinic", status: "confirmed" },
-    { patient: "Mike Johnson", time: "2:00 PM", type: "Online", status: "pending" },
-  ];
+  const appointments = appointmentsData?.appointments || [];
 
   return (
     <main className="">
@@ -91,11 +115,22 @@ export default function DoctorDashboard() {
         className="mx-auto space-y-6"
       >
         {/* Header */}
-        <div className="text-center md:text-left bg-gradient-to-r from-blue-500 to-green-500 rounded-2xl p-6 shadow-lg">
-          <h1 className="text-3xl font-bold text-white drop-shadow">
-            Doctor Dashboard
-          </h1>
-          <p className="text-white/90">Welcome back, Dr. Sarah Wilson</p>
+        <div className="relative bg-gradient-to-br from-blue-500 via-blue-600 to-green-500 rounded-3xl p-8 shadow-2xl overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-green-500/20 backdrop-blur-sm"></div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-12 -translate-x-12"></div>
+          <div className="relative z-10 flex items-center gap-6">
+            <div className="bg-white/20 p-5 rounded-3xl backdrop-blur-md border border-white/30">
+              <FaUserMd className="text-4xl text-white drop-shadow-lg" />
+            </div>
+            <div>
+              <h1 className="text-4xl font-bold text-white drop-shadow-lg flex items-center gap-3">
+                <MdDashboard className="text-3xl" />
+                Doctor Dashboard
+              </h1>
+              <p className="text-white/90 text-lg mt-2 font-medium">Welcome back, {user?.name || 'Doctor'}</p>
+            </div>
+          </div>
         </div>
 
         {/* Stats Section */}
@@ -106,84 +141,129 @@ export default function DoctorDashboard() {
         </div>
 
         {/* Tabs */}
-        <div className="bg-white rounded-2xl shadow-lg border-t-4 border-gradient-to-r from-blue-500 to-green-500" style={{borderImage: 'linear-gradient(to right, #3b82f6, #10b981) 1'}}>
-          <div className="flex space-x-6 border-b px-6 pt-4">
-            {["Appointments", "Schedule", "Patients", "Prescriptions"].map(
-              (tab, idx) => (
-                <button
+        <div className="bg-white rounded-3xl shadow-2xl border-t-4 relative overflow-hidden" style={{borderImage: 'linear-gradient(to right, #3b82f6, #10b981) 1'}}>
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 to-green-50/30"></div>
+          <div className="relative z-10 flex space-x-2 border-b border-gray-200/50 px-6 pt-6 pb-2">
+            {[
+              { name: "Appointments", icon: <BiCalendarCheck className="text-lg" /> },
+              { name: "Schedule", icon: <FaClock className="text-lg" /> },
+              { name: "Patients", icon: <FaUsers className="text-lg" /> },
+              { name: "Prescriptions", icon: <HiOutlineClipboardList className="text-lg" /> }
+            ].map((tab, idx) => (
+                <motion.button
                   key={idx}
-                  onClick={() => setActiveTab(tab)}
-                  className={`pb-3 text-sm font-medium transition-colors ${
-                    activeTab === tab
-                      ? "text-green-600 border-b-2 border-green-600"
-                      : "text-gray-500 hover:text-gray-700"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setActiveTab(tab.name)}
+                  className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 ${
+                    activeTab === tab.name
+                      ? "bg-gradient-to-r from-blue-500 to-green-500 text-white shadow-lg"
+                      : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
                   }`}
                 >
-                  {tab}
-                </button>
+                  {tab.icon}
+                  {tab.name}
+                </motion.button>
               )
             )}
           </div>
 
           {/* Conditional Rendering for Tabs */}
-          <div className="p-6">
+          <div className="relative z-10 p-6">
             {activeTab === "Appointments" && (
               <>
-                <h2 className="text-lg font-semibold text-gray-800 mb-2">
-                  Today's Appointments
-                </h2>
-                <p className="text-gray-500 mb-4">
-                  Manage your upcoming consultations
-                </p>
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="bg-gradient-to-r from-blue-500 to-green-500 p-3 rounded-xl">
+                    <BiCalendarCheck className="text-2xl text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-800">
+                      Today's Appointments
+                    </h2>
+                    <p className="text-gray-600">
+                      Manage your upcoming consultations
+                    </p>
+                  </div>
+                </div>
 
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
+                <div className="overflow-x-auto bg-gradient-to-br from-blue-50/50 to-green-50/50 rounded-3xl p-6 border border-white/60">
+                  <table className="min-w-full divide-y divide-gray-300">
                     <thead>
-                      <tr className="text-left text-gray-600">
-                        <th className="py-2 px-4">Patient</th>
-                        <th className="py-2 px-4">Time</th>
-                        <th className="py-2 px-4">Type</th>
-                        <th className="py-2 px-4">Status</th>
-                        <th className="py-2 px-4 text-center">Actions</th>
+                      <tr className="text-left text-gray-700 bg-white/80 backdrop-blur-sm">
+                        <th className="py-4 px-6 font-semibold rounded-l-xl">
+                          <div className="flex items-center gap-2">
+                            <FaUsers className="text-blue-500" />
+                            Patient
+                          </div>
+                        </th>
+                        <th className="py-4 px-6 font-semibold">
+                          <div className="flex items-center gap-2">
+                            <FaClock className="text-green-500" />
+                            Time
+                          </div>
+                        </th>
+                        <th className="py-4 px-6 font-semibold">
+                          <div className="flex items-center gap-2">
+                            <FaVideo className="text-purple-500" />
+                            Type
+                          </div>
+                        </th>
+                        <th className="py-4 px-6 font-semibold">
+                          <div className="flex items-center gap-2">
+                            <FaCheckCircle className="text-amber-500" />
+                            Status
+                          </div>
+                        </th>
+                        <th className="py-4 px-6 text-center font-semibold rounded-r-xl">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200">
+                    <tbody className="divide-y divide-gray-200 bg-white/60 backdrop-blur-sm">
                       {appointments.map((appt, idx) => (
-                        <tr key={idx} className="hover:bg-gray-50">
-                          <td className="py-3 px-4">{appt.patient}</td>
-                          <td className="py-3 px-4">{appt.time}</td>
-                          <td className="py-3 px-4">
+                        <motion.tr 
+                          key={idx} 
+                          whileHover={{ scale: 1.01, backgroundColor: "rgba(59, 130, 246, 0.1)" }}
+                          className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-green-50 transition-all duration-300 cursor-pointer"
+                        >
+                          <td className="py-4 px-6 font-medium text-gray-800">{appt.patientName || appt.patient}</td>
+                          <td className="py-4 px-6 text-gray-700 font-medium">{new Date(appt.appointmentDate).toLocaleTimeString() || appt.time}</td>
+                          <td className="py-4 px-6">
                             <span
-                              className={`flex items-center gap-1 text-xs px-2 py-1 rounded-full ${
+                              className={`flex items-center gap-2 text-sm px-3 py-2 rounded-xl font-medium ${
                                 appt.type === "Online"
-                                  ? "bg-green-100 text-green-700"
-                                  : "bg-orange-100 text-orange-700"
+                                  ? "bg-green-100 text-green-700 border border-green-200"
+                                  : "bg-orange-100 text-orange-700 border border-orange-200"
                               }`}
                             >
                               {appt.type === "Online" ? (
-                                <FaVideo className="text-xs" />
+                                <FaVideo className="text-sm" />
                               ) : (
-                                <FaClinicMedical className="text-xs" />
+                                <FaClinicMedical className="text-sm" />
                               )}
                               {appt.type}
                             </span>
                           </td>
-                          <td className="py-3 px-4">
+                          <td className="py-4 px-6">
                             <span
-                              className={`text-xs px-3 py-1 rounded-full ${
+                              className={`text-sm px-4 py-2 rounded-xl font-semibold ${
                                 appt.status === "confirmed"
-                                  ? "bg-blue-100 text-blue-700"
-                                  : "bg-gray-100 text-gray-700"
+                                  ? "bg-blue-100 text-blue-700 border border-blue-200"
+                                  : "bg-gray-100 text-gray-700 border border-gray-200"
                               }`}
                             >
                               {appt.status}
                             </span>
                           </td>
-                          <td className="py-3 px-4 flex gap-2 justify-center">
-                            <Button variant="outline">View</Button>
-                            <Button>Start</Button>
+                          <td className="py-4 px-6 flex gap-3 justify-center">
+                            <Button variant="outline" className="flex items-center gap-2">
+                              <FaEye className="text-sm" />
+                              View
+                            </Button>
+                            <Button className="flex items-center gap-2">
+                              <FaPlay className="text-sm" />
+                              Start
+                            </Button>
                           </td>
-                        </tr>
+                        </motion.tr>
                       ))}
                     </tbody>
                   </table>

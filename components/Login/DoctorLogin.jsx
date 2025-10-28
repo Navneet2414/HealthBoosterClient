@@ -47,17 +47,29 @@ export default function DoctorLogin() {
         console.log("No doctor object in response");
       }
 
-      // Check approval status first
+      // Store credentials with proper verification status
+      const doctorData = {
+        ...result.doctor,
+        isVerified: true // Set as verified since login was successful
+      };
+      
+      console.log("Storing doctor data:", doctorData);
+      
+      dispatch(setCredentials({
+        user: doctorData,
+        token: result.token,
+        role: result.doctor?.role || 'doctor'
+      }));
+      
+      // Check approval status
       if (result.doctor?.isApproved === true) {
-        dispatch(setCredentials({
-          user: result.user || result.doctor,
-          token: result.token,
-          role: result.doctor?.role || 'doctor'
-        }));
+        console.log("Doctor is approved. Redirecting to dashboard.");
         toast.success("Login successful!");
-        router.push("/doctor/dashboard");
+        console.log("About to redirect to /doctor/dashboard");
+        window.location.href = "/doctor/dashboard";
       } else {
-        toast.warning("Your account is pending verification. Please wait for admin approval.");
+        console.log("Doctor not approved, redirecting to verification pending");
+        toast.warning("Your account is pending admin approval.");
         router.push("/verification-pending");
       }
       
