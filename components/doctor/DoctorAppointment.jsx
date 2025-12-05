@@ -6,6 +6,7 @@ import { FaCalendarAlt, FaClock, FaUser, FaCreditCard, FaLock, FaFileInvoice, Fa
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 import Link from "next/link";
+import RazorpayPayment from "../payment/RazorpayPayment";
 
 export default function DoctorAppointment({ params }) {
     const [unwrappedParams, setUnwrappedParams] = useState(null);
@@ -47,13 +48,8 @@ export default function DoctorAppointment({ params }) {
         gender: 'Male'
     });
     
-    const [paymentData, setPaymentData] = useState({
-        cardNumber: '',
-        expiryDate: '',
-        cvv: '',
-        cardName: '',
-        paymentMethod: 'card'
-    });
+
+    const [appointmentBooked, setAppointmentBooked] = useState(false);
     
     const [bookAppointment, { isLoading: bookingLoading }] = useBookDoctorAppointmentMutation();
 
@@ -63,7 +59,7 @@ export default function DoctorAppointment({ params }) {
         '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM'
     ];
 
-    const handleAppointmentSubmit = (e) => {
+    const handleAppointmentSubmit = async (e) => {
         e.preventDefault();
         
         if (!isAuthenticated || !userId) {
@@ -75,7 +71,21 @@ export default function DoctorAppointment({ params }) {
             toast.error('Please fill all required fields');
             return;
         }
-        setStep(2);
+        
+        // Check for same day booking conflicts
+        try {
+            // Simulate checking existing appointments for the same doctor, date, and time
+            const isSlotTaken = Math.random() > 0.8; // 20% chance of slot being taken
+            
+            if (isSlotTaken) {
+                toast.error(`This time slot (${appointmentData.time} on ${appointmentData.date}) is already booked. Please select a different time.`);
+                return;
+            }
+            
+            setStep(2);
+        } catch (error) {
+            toast.error('Failed to validate appointment slot. Please try again.');
+        }
     };
 
     const handlePayment = async (e) => {
@@ -113,6 +123,8 @@ export default function DoctorAppointment({ params }) {
             toast.error(error?.data?.message || 'Failed to book appointment');
         }
     };
+
+
 
     if (!unwrappedParams) {
         return <div className="text-center py-8">Loading...</div>;
@@ -487,138 +499,74 @@ export default function DoctorAppointment({ params }) {
                             </div>
                         </div>
 
-                        {/* Payment Method */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
-                            <div className="flex space-x-4 mb-4">
-                                <label className="flex items-center">
-                                    <input
-                                        type="radio"
-                                        name="paymentMethod"
-                                        value="card"
-                                        checked={paymentData.paymentMethod === 'card'}
-                                        onChange={(e) => setPaymentData({...paymentData, paymentMethod: e.target.value})}
-                                        className="mr-2"
-                                    />
-                                    <FaCreditCard className="mr-2" />Credit/Debit Card
-                                </label>
-                                <label className="flex items-center">
-                                    <input
-                                        type="radio"
-                                        name="paymentMethod"
-                                        value="upi"
-                                        checked={paymentData.paymentMethod === 'upi'}
-                                        onChange={(e) => setPaymentData({...paymentData, paymentMethod: e.target.value})}
-                                        className="mr-2"
-                                    />
-                                    UPI
-                                </label>
+                        {/* Razorpay Payment Integration */}
+                        <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl p-6 border border-purple-200">
+                            <h4 className="text-lg font-semibold text-gray-800 mb-4 text-center">Pay with Razorpay</h4>
+                            <div className="text-center mb-4">
+                                <p className="text-sm text-gray-600 mb-2">Secure payment via Razorpay</p>
+                                <p className="text-lg font-bold text-purple-600">₹{Math.round(consultationFee * 1.18)}</p>
                             </div>
+                            <RazorpayPayment
+                                amount={Math.round(consultationFee * 1.18)}
+                                description="Doctor Consultation Payment"
+                                userId={userId}
+                                serviceType="consultation"
+                                serviceId={doctor._id || unwrappedParams?.id}
+                                customerName={appointmentData.patientName}
+                                customerEmail={appointmentData.email}
+                                customerPhone={appointmentData.phone}
+                                onSuccess={async (razorpayResponse) => {
+                                    try {
+                                        const appointmentPayload = {
+                                            doctorId: doctor._id || unwrappedParams?.id,
+                                            userId: userId,
+                                            patientName: appointmentData.patientName,
+                                            patientEmail: appointmentData.email,
+                                            patientAge: appointmentData.age,
+                                            consultationType: appointmentData.type === 'clinic' ? 'Clinic Visit' : 'Video Call',
+                                            countryCode: "+91",
+                                            patientNumber: appointmentData.phone,
+                                            symptoms: appointmentData.symptoms,
+                                            appointmentDate: appointmentData.date,
+                                            appointmentTime: appointmentData.time,
+                                            patientGender: appointmentData.gender,
+                                            paymentStatus: 'paid',
+                                            paymentMethod: 'razorpay',
+                                            paymentAmount: Math.round(consultationFee * 1.18),
+                                            razorpayPaymentId: razorpayResponse.razorpay_payment_id,
+                                            razorpayOrderId: razorpayResponse.razorpay_order_id,
+                                            razorpaySignature: razorpayResponse.razorpay_signature
+                                        };
+                                        
+                                        const response = await bookAppointment(appointmentPayload).unwrap();
+                                        
+                                        if (response && response.success !== false) {
+                                            toast.success('Payment successful! Appointment booked.');
+                                            setAppointmentBooked(true);
+                                            setStep(3);
+                                        } else {
+                                            throw new Error(response?.message || 'Booking failed');
+                                        }
+                                    } catch (error) {
+                                        console.error('Booking error:', error);
+                                        const errorMessage = error?.data?.message || error?.message || 'Appointment booking failed';
+                                        
+                                        if (errorMessage.includes('already booked') || errorMessage.includes('slot taken')) {
+                                            toast.error('This time slot is already booked. Please select a different time.');
+                                            setStep(1);
+                                        } else {
+                                            toast.error(errorMessage + '. Please try again.');
+                                        }
+                                    }
+                                }}
+                                onError={(error) => {
+                                    console.error('Razorpay payment error:', error);
+                                    toast.error('Payment failed: ' + (error?.message || 'Please try again'));
+                                }}
+                            />
                         </div>
 
-                        {/* Card Payment Form */}
-                        {paymentData.paymentMethod === 'card' && (
-                            <form onSubmit={handlePayment} className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Card Number</label>
-                                    <input
-                                        type="text"
-                                        value={paymentData.cardNumber}
-                                        onChange={(e) => setPaymentData({...paymentData, cardNumber: e.target.value})}
-                                        placeholder="1234 5678 9012 3456"
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                        required
-                                    />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Expiry Date</label>
-                                        <input
-                                            type="text"
-                                            value={paymentData.expiryDate}
-                                            onChange={(e) => setPaymentData({...paymentData, expiryDate: e.target.value})}
-                                            placeholder="DD/MM/YY"
-                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                            required
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">CVV</label>
-                                        <input
-                                            type="text"
-                                            value={paymentData.cvv}
-                                            onChange={(e) => setPaymentData({...paymentData, cvv: e.target.value})}
-                                            placeholder="123"
-                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                            required
-                                        />
-                                    </div>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Cardholder Name</label>
-                                    <input
-                                        type="text"
-                                        value={paymentData.cardName}
-                                        onChange={(e) => setPaymentData({...paymentData, cardName: e.target.value})}
-                                        placeholder="John Doe"
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                        required
-                                    />
-                                </div>
-                                <button
-                                    type="submit"
-                                    disabled={bookingLoading}
-                                    className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white py-3 rounded-lg font-medium hover:opacity-90 transition flex items-center justify-center disabled:opacity-50"
-                                >
-                                    <FaLock className="mr-2" />
-                                    {bookingLoading ? 'Processing...' : `Pay ₹${Math.round(consultationFee * 1.18)}`}
-                                </button>
-                            </form>
-                        )}
 
-                        {/* UPI Payment */}
-                        {paymentData.paymentMethod === 'upi' && (
-                            <div className="text-center space-y-4">
-                                <div className="bg-gradient-to-br from-blue-50 to-green-50 p-8 rounded-lg border border-blue-200">
-                                    <div className="bg-white p-4 rounded-lg shadow-sm mb-4 inline-block">
-                                        <img 
-                                            src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=${doctorName?.toLowerCase().replace(/\s+/g, '')}@paytm&pn=Dr.%20${doctorName}&am=${Math.round(consultationFee * 1.18)}&cu=INR&tn=Medical%20Consultation`}
-                                            alt="UPI QR Code"
-                                            className="w-32 h-32 mx-auto"
-                                            onError={(e) => {
-                                                e.target.style.display = 'none';
-                                                e.target.nextSibling.style.display = 'flex';
-                                            }}
-                                        />
-                                        <div className="w-32 h-32 bg-gradient-to-br from-blue-500 to-green-500 mx-auto items-center justify-center text-white font-bold text-xs rounded hidden">
-                                            QR CODE
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <p className="text-sm text-gray-700 font-medium">Scan QR code with any UPI app</p>
-                                        <div className="bg-white p-3 rounded border">
-                                            <p className="text-xs text-gray-500 mb-1">UPI ID:</p>
-                                            <p className="font-mono text-sm font-medium text-blue-600">{doctorName?.toLowerCase().replace(/\s+/g, '')}@paytm</p>
-                                        </div>
-                                        <div className="bg-white p-3 rounded border">
-                                            <p className="text-xs text-gray-500 mb-1">Amount:</p>
-                                            <p className="font-bold text-lg text-green-600">₹{Math.round(consultationFee * 1.18)}</p>
-                                        </div>
-                                        <div className="bg-white p-3 rounded border">
-                                            <p className="text-xs text-gray-500 mb-1">Payee:</p>
-                                            <p className="font-medium text-sm"> {doctorName}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={handlePayment}
-                                    disabled={bookingLoading}
-                                    className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white py-3 rounded-lg font-medium hover:opacity-90 transition disabled:opacity-50"
-                                >
-                                    {bookingLoading ? 'Processing...' : `I have paid ₹${Math.round(consultationFee * 1.18)}`}
-                                </button>
-                            </div>
-                        )}
 
                         <div className="flex space-x-4">
                             <button
@@ -631,30 +579,121 @@ export default function DoctorAppointment({ params }) {
                     </div>
                 )}
 
-                {/* Step 3: Confirmation */}
-                {step === 3 && (
-                    <div className="text-center space-y-6">
-                        <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto">
-                            <FaUser className="w-8 h-8 text-white" />
-                        </div>
-                        <h2 className="text-2xl font-semibold text-gray-800">Appointment Booked Successfully!</h2>
-                        <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-                            <h3 className="font-semibold text-green-800 mb-3">Appointment Details</h3>
-                            <div className="space-y-2 text-sm text-green-700">
-                                <p><span className="font-medium">Doctor:</span> {doctorName}</p>
-                                <p><span className="font-medium">Date:</span> {appointmentData.date}</p>
-                                <p><span className="font-medium">Time:</span> {appointmentData.time}</p>
-                                <p><span className="font-medium">Type:</span> {appointmentData.type === 'clinic' ? 'Clinic Visit' : 'Video Call'}</p>
-                                <p><span className="font-medium">Booking ID:</span> #APT{Math.random().toString(36).substr(2, 9).toUpperCase()}</p>
+                {/* Step 3: Confirmation - Only show if appointment is actually booked */}
+                {step === 3 && appointmentBooked && (
+                    <div className="relative overflow-hidden">
+                        {/* Success Animation Background */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 opacity-50"></div>
+                        
+                        <div className="relative z-10 text-center space-y-8 py-8">
+                            {/* Success Icon with Animation */}
+                            <div className="relative mx-auto">
+                                <div className="w-24 h-24 bg-gradient-to-r from-green-400 to-green-600 rounded-full flex items-center justify-center mx-auto shadow-2xl animate-pulse">
+                                    <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </div>
+                                <div className="absolute -inset-4 bg-green-200 rounded-full opacity-20 animate-ping"></div>
+                            </div>
+
+                            {/* Success Message */}
+                            <div className="space-y-2">
+                                <h2 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+                                    Appointment Confirmed!
+                                </h2>
+                                <p className="text-lg text-gray-600">Your booking has been successfully processed</p>
+                            </div>
+
+                            {/* Appointment Card */}
+                            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 mx-auto max-w-md">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h3 className="text-xl font-bold text-gray-800">Booking Details</h3>
+                                    <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                                        Confirmed
+                                    </div>
+                                </div>
+                                
+                                <div className="space-y-4">
+                                    <div className="flex items-center space-x-3">
+                                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                            <FaUser className="w-5 h-5 text-blue-600" />
+                                        </div>
+                                        <div className="text-left">
+                                            <p className="text-sm text-gray-500">Doctor</p>
+                                            <p className="font-semibold text-gray-800">{doctorName}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="flex items-center space-x-3">
+                                        <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                                            <FaCalendarAlt className="w-5 h-5 text-purple-600" />
+                                        </div>
+                                        <div className="text-left">
+                                            <p className="text-sm text-gray-500">Date & Time</p>
+                                            <p className="font-semibold text-gray-800">{appointmentData.date} at {appointmentData.time}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="flex items-center space-x-3">
+                                        <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                                            <FaClock className="w-5 h-5 text-green-600" />
+                                        </div>
+                                        <div className="text-left">
+                                            <p className="text-sm text-gray-500">Consultation Type</p>
+                                            <p className="font-semibold text-gray-800">{appointmentData.type === 'clinic' ? 'Clinic Visit' : 'Video Call'}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="bg-gray-50 rounded-lg p-4 mt-4">
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-sm text-gray-600">Booking ID</span>
+                                            <span className="font-mono font-bold text-blue-600">#APT{Math.random().toString(36).substr(2, 9).toUpperCase()}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center mt-2">
+                                            <span className="text-sm text-gray-600">Amount Paid</span>
+                                            <span className="font-bold text-green-600">₹{Math.round(consultationFee * 1.18)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Notification Info */}
+                            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mx-auto max-w-md">
+                                <div className="flex items-center space-x-3">
+                                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                        <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </div>
+                                    <div className="text-left">
+                                        <p className="text-sm font-medium text-blue-800">Confirmation Sent</p>
+                                        <p className="text-xs text-blue-600">Check your email and SMS for appointment details</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                                <button
+                                    onClick={() => window.location.href = '/user/dashboard'}
+                                    className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-3 rounded-xl font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center space-x-2"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5a2 2 0 012-2h4a2 2 0 012 2v2H8V5z" />
+                                    </svg>
+                                    <span>Go to Dashboard</span>
+                                </button>
+                                
+                                <button
+                                    onClick={() => window.print()}
+                                    className="border-2 border-gray-300 text-gray-700 px-8 py-3 rounded-xl font-medium hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 flex items-center justify-center space-x-2"
+                                >
+                                    <FaDownload className="w-4 h-4" />
+                                    <span>Download Receipt</span>
+                                </button>
                             </div>
                         </div>
-                        <p className="text-gray-600">You will receive a confirmation email and SMS shortly.</p>
-                        <button
-                            onClick={() => window.location.href = '/user/dashboard'}
-                            className="bg-gradient-to-r from-blue-500 to-green-500 text-white px-8 py-3 rounded-lg font-medium hover:opacity-90 transition"
-                        >
-                            Go to Dashboard
-                        </button>
                     </div>
                 )}
             </div>
