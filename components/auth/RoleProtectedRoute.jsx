@@ -21,7 +21,7 @@ export function AdminRoute({ children }) {
 
 export function DoctorRoute({ children }) {
   return (
-    <ProtectedRoute allowedRoles={['doctor']} redirectTo="/login/doctor">
+    <ProtectedRoute allowedRoles={['doctor']} redirectTo="/login/doctor" requiresVerification={true}>
       {children}
     </ProtectedRoute>
   );
@@ -29,7 +29,7 @@ export function DoctorRoute({ children }) {
 
 export function LaboratoryRoute({ children }) {
   return (
-    <ProtectedRoute allowedRoles={['laboratory']} redirectTo="/login/laboratory">
+    <ProtectedRoute allowedRoles={['laboratory']} redirectTo="/login/laboratory" requiresVerification={true}>
       {children}
     </ProtectedRoute>
   );
@@ -43,8 +43,8 @@ export function UserRoute({ children }) {
   );
 }
 
-function ProtectedRoute({ children, allowedRoles, redirectTo }) {
-  const { isAuthenticated, role, token } = useSelector((state) => state.auth);
+function ProtectedRoute({ children, allowedRoles, redirectTo, requiresVerification = false }) {
+  const { isAuthenticated, role, token, user } = useSelector((state) => state.auth);
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
 
@@ -62,14 +62,31 @@ function ProtectedRoute({ children, allowedRoles, redirectTo }) {
 
       if (!allowedRoles.includes(role)) {
         router.push(ROLE_REDIRECTS[role] || '/');
+        return;
+      }
+
+      if (requiresVerification && user && (!user.isVerified || !user.isApproved)) {
+        router.push('/verification-pending');
+        return;
       }
     }
-  }, [isAuthenticated, role, token, allowedRoles, router, redirectTo, isLoading]);
+  }, [isAuthenticated, role, token, allowedRoles, router, redirectTo, isLoading, requiresVerification, user]);
 
   if (isLoading || !isAuthenticated || !allowedRoles.includes(role)) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (requiresVerification && user && (!user.isVerified || !user.isApproved)) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-xl font-bold mb-2">Verification Pending</h2>
+          <p className="text-gray-600">Your account is pending admin verification.</p>
+        </div>
       </div>
     );
   }
